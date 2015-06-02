@@ -1,4 +1,8 @@
-# Myo Glass Companion Protocol Input
+# Audio Sword
+
+This is an app for the visually impaired people. Using this application they can get instant updates on their locations through hand gestures.
+
+MYO is used to recognize arm gestures.This application might have combined interactions with glass in the future.
 
 <a href="https://market.myo.com/app/55243f41e4b0526c9cb198c0/">
   <img alt="Android app on Myo Market"
