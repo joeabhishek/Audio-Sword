@@ -313,11 +313,6 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public void onConnected(Bundle connectionHint) {
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
-        if (mLastLocation != null) {
-            mLatitudeText = (String.valueOf(mLastLocation.getLatitude()));
-            mLongitudeText = (String.valueOf(mLastLocation.getLongitude()));
-            startIntentService();
-        }
     }
 
     /**
