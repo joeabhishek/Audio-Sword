@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ResultReceiver;
+import android.speech.tts.TextToSpeech;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -44,9 +45,13 @@ import com.thalmic.myo.scanner.ScanActivity;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Set;
 
-public class ConfigActivity extends Activity implements GlassDevice.GlassConnectionListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class ConfigActivity extends Activity implements GlassDevice.GlassConnectionListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        TextToSpeech.OnInitListener {
     private static final String TAG = "ConfigActivity";
 
     private static final int REQUEST_ENABLE_BT = 1;
@@ -72,6 +77,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     private String mLatitudeText;
     private String mLongitudeText;
     private Pose pose;
+    private TextToSpeech tts;
 
     protected boolean mAddressRequested;
 
@@ -141,6 +147,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         mResultReceiver = new AddressResultReceiver(new Handler());
         buildGoogleApiClient();
         mGoogleApiClient.connect();
+
+        //Text to speech initialization
+        tts = new TextToSpeech(this, this);
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -437,6 +446,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             //displayAddressOutput();
             String lines[] = mAddressOutput.split("\\r?\\n");
             showToast(lines[1]);
+            speakOut(lines[1]);
 
             // Show a toast message if an address was found.
             if (resultCode == Constants.SUCCESS_RESULT) {
@@ -453,6 +463,33 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
      */
     protected void showToast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onInit(int status) {
+
+        if (status == TextToSpeech.SUCCESS) {
+
+            int result = tts.setLanguage(Locale.US);
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+
+            }
+
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
+
+    }
+
+    private void speakOut(String text) {
+        //String text = txtText.getText().toString();
+        if(!text.equals("STOP")){
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
 
 }
