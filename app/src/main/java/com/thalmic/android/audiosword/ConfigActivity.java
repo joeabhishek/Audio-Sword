@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -32,6 +33,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
 import com.google.glass.companion.Proto;
 import com.thalmic.myo.AbstractDeviceListener;
@@ -45,16 +48,25 @@ import com.thalmic.myo.scanner.ScanActivity;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
 public class ConfigActivity extends Activity implements GlassDevice.GlassConnectionListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        TextToSpeech.OnInitListener {
+        LocationListener,
+        TextToSpeech.OnInitListener
+         {
     private static final String TAG = "ConfigActivity";
 
     private static final int REQUEST_ENABLE_BT = 1;
+    private static final String REQUESTING_LOCATION_UPDATES_KEY = "REQUESTING_LOCATION_UPDATES_KEY" ;
+    private static final String LOCATION_KEY = "LOCATION_KEY" ;
+    private static final String LAST_UPDATED_TIME_STRING_KEY = "LAST_UPDATED_TIME_STRING_KEY" ;
+    private static final String SPEAK_BOOLEAN = "SPEAK_BOOLEAN" ;
+
 
     private MyoRemoteService mService;
     private StopReceiver mStopReceiver = new StopReceiver();
@@ -72,14 +84,24 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     private GlassDevice mGlass;
     private boolean mScreencastEnabled = false;
 
+
+    // Location Services
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
     private String mLatitudeText;
     private String mLongitudeText;
     private Pose pose;
     private TextToSpeech tts;
-
+    private boolean mRequestingLocationUpdates = false;
+    private LocationRequest mLocationRequest;
+    private Location mCurrentLocation;
+    private String mLastUpdateTime;
     protected boolean mAddressRequested;
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    SharedPreferences sharedpreferences;
+    public static final String SpeakBoolean = "speakBoolean";
+    private boolean speak = false;
 
     /**
      * The formatted location address.
@@ -131,7 +153,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         mMyoStatusView = (TextView) findViewById(R.id.myo_status);
         mGlassStatusView = (TextView) findViewById(R.id.glass_status);
         mScreencastView = (ImageView) findViewById(R.id.screenshot);
-        mScreencastButton = (Button) findViewById(R.id.btnStartScreencast);
+        mScreencastButton = (Button) findViewById(R.id.stop_button);
         mPoseView = (TextView) findViewById(R.id.pose);
         mArmView = (TextView) findViewById(R.id.arm);
 
@@ -150,6 +172,19 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
+
+        // Updating values from save instances
+        updateValuesFromBundle(savedInstanceState);
+
+        //Update Shared preferences
+        mPrefs = new AppPrefs(this);
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
+        if (sharedpreferences.contains(SpeakBoolean))
+        {
+            speak = sharedpreferences.getBoolean(SpeakBoolean, false);
+
+        }
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -158,6 +193,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        createLocationRequest();
     }
 
     @Override
@@ -167,6 +203,12 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         unregisterReceiver(mStopReceiver);
         unbindService(mServiceConnection);
         mGlass.unregisterListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
     }
 
     @Override
@@ -185,6 +227,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+            startLocationUpdates();
         }
     }
 
@@ -210,6 +255,18 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             case R.id.kill_myglass:
                 killMyGlass();
                 return true;
+            case R.id.speak_text :
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+
+                item.setChecked(!item.isChecked());
+                if(item.isChecked()){
+                    speak = true;
+                } else {
+                    speak = false;
+                }
+                editor.putBoolean(SpeakBoolean, speak);
+                editor.commit();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -229,16 +286,26 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         } else{
             mGlass.stopScreenshot();
         }
+        stopLocationUpdates();
+        speakOut("Location Updates Stopped");
     }
 
     public void onGetLocation(View view) {
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
-        if (mLastLocation != null) {
+        if (mCurrentLocation != null) {
             mLatitudeText = (String.valueOf(mLastLocation.getLatitude()));
             mLongitudeText = (String.valueOf(mLastLocation.getLongitude()));
-            startIntentService();
+
         }
+        startLocationUpdates();
+    }
+
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     private void setScreencastEnabled(boolean enable) {
@@ -247,8 +314,8 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     private void updateScreencastState(){
-        mScreencastButton.setText(mScreencastEnabled ? R.string.stop : R.string.start);
-        mScreencastView.setVisibility(mScreencastEnabled ? View.VISIBLE : View.INVISIBLE);
+        //mScreencastButton.setText(mScreencastEnabled ? R.string.stop : R.string.start);
+        //mScreencastView.setVisibility(mScreencastEnabled ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void updateGlassStatus(GlassDevice.ConnectionStatus connectionStatus) {
@@ -327,7 +394,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
 
         // Pass the location data as an extra to the service.
-        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mCurrentLocation);
 
         // Start the service. If the service isn't already running, it is instantiated and started
         // (creating a process for it if needed); if it is running then it remains running. The
@@ -381,8 +448,12 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         public void onPose(Myo myo, long timestamp, final Pose pose) {
             mPoseView.setText(pose.name());
             if(pose == pose.FIST) {
-                startIntentService();
+                startLocationUpdates();
+            } else if(pose == pose.FINGERS_SPREAD) {
+                stopLocationUpdates();
+                speakOut("Location Updates Stopped");
             }
+
         }
 
         @Override
@@ -482,9 +553,77 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
     private void speakOut(String text) {
         //String text = txtText.getText().toString();
-        if(!text.equals("STOP")){
+        if(!text.equals("STOP") && speak){
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
         }
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        mCurrentLocation = location;
+        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        startIntentService();
+        updateUI();
+    }
+
+    private void updateUI() {
+        //mLatitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
+        //mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
+        //mLastUpdateTimeTextView.setText(mLastUpdateTime);
+    }
+
+    protected void startLocationUpdates() {
+        mRequestingLocationUpdates = true;
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest,this );
+    }
+
+    protected void stopLocationUpdates() {
+        mRequestingLocationUpdates = false;
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                mGoogleApiClient,this);
+    }
+
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
+                mRequestingLocationUpdates);
+        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
+        savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
+        savedInstanceState.putBoolean(SPEAK_BOOLEAN, speak);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    private void updateValuesFromBundle(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            // Update the value of mRequestingLocationUpdates from the Bundle, and
+            // make sure that the Start Updates and Stop Updates buttons are
+            // correctly enabled or disabled.
+            if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+                mRequestingLocationUpdates = savedInstanceState.getBoolean(
+                        REQUESTING_LOCATION_UPDATES_KEY);
+                //setButtonsEnabledState();
+            }
+
+            // Update the value of mCurrentLocation from the Bundle and update the
+            // UI to show the correct latitude and longitude.
+            if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
+                // Since LOCATION_KEY was found in the Bundle, we can be sure that
+                // mCurrentLocationis not null.
+                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+            }
+
+            // Update the value of mLastUpdateTime from the Bundle and update the UI.
+            if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
+                mLastUpdateTime = savedInstanceState.getString(
+                        LAST_UPDATED_TIME_STRING_KEY);
+            }
+
+            // Update the value of speak boolean from the Bundle and update the UI.
+            if (savedInstanceState.keySet().contains(SPEAK_BOOLEAN)) {
+                speak = savedInstanceState.getBoolean(
+                        SPEAK_BOOLEAN);
+            }
+            updateUI();
+        }
+    }
 }

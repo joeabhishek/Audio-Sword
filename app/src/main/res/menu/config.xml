@@ -3,4 +3,13 @@
     <item android:id="@+id/kill_myglass"
         android:title="@string/kill_myglass"
         android:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/speak_text"
+        android:actionViewClass="android.widget.CheckBox"
+        android:title="@string/action_speak"
+        android:color="#ffffff"
+        android:checkable="true"
+        android:checked="true"
+        />
 </menu>

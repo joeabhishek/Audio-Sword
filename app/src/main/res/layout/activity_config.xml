@@ -30,17 +30,17 @@
             android:layout_weight="1">
 
             <Button
-                android:text="@string/start"
+                android:text="@string/stop_location"
                 android:onClick="onScreencastBtn"
-                android:id="@+id/btnStartScreencast"
+                android:id="@+id/stop_button"
                 android:layout_margin="5dp"
                 android:layout_width="0dp"
                 android:layout_height="fill_parent" />
 
             <Button
-                android:text="@string/get_location"
+                android:text="@string/start_location"
                 android:onClick="onGetLocation"
-                android:id="@+id/button"
+                android:id="@+id/start_button"
                 android:layout_margin="5dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
