@@ -57,15 +57,14 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener,
-        TextToSpeech.OnInitListener
-         {
+        TextToSpeech.OnInitListener {
     private static final String TAG = "ConfigActivity";
 
     private static final int REQUEST_ENABLE_BT = 1;
-    private static final String REQUESTING_LOCATION_UPDATES_KEY = "REQUESTING_LOCATION_UPDATES_KEY" ;
-    private static final String LOCATION_KEY = "LOCATION_KEY" ;
-    private static final String LAST_UPDATED_TIME_STRING_KEY = "LAST_UPDATED_TIME_STRING_KEY" ;
-    private static final String SPEAK_BOOLEAN = "SPEAK_BOOLEAN" ;
+    private static final String REQUESTING_LOCATION_UPDATES_KEY = "REQUESTING_LOCATION_UPDATES_KEY";
+    private static final String LOCATION_KEY = "LOCATION_KEY";
+    private static final String LAST_UPDATED_TIME_STRING_KEY = "LAST_UPDATED_TIME_STRING_KEY";
+    private static final String SPEAK_BOOLEAN = "SPEAK_BOOLEAN";
 
 
     private MyoRemoteService mService;
@@ -98,11 +97,28 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     private String mLastUpdateTime;
     protected boolean mAddressRequested;
 
-    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String MyPREFERENCES = "MyPrefs";
     SharedPreferences sharedpreferences;
     public static final String SpeakBoolean = "speakBoolean";
     private boolean speak = false;
 
+    /* Phone menu items */
+
+    private String[] primaryMenu = {"Favourites", "Emergency"};
+    private String[] secondaryMenu = {"Missed", "Dialed", "Received"};
+    private String[] favourites = {"Davide", "Alex", "Lisa", "John"};
+    private String[] emergency = {"Davide", "Alex", "Lisa", "John"};
+    private String[] missed = {"Davide", "Alex", "Lisa", "John"};
+    private String[] dialed = {"Davide", "Alex", "Lisa", "John"};
+    private String[] received = {"Davide", "Alex", "Lisa", "John"};
+    private String[] dummy = {"a", "b"};
+    private String[][] callLists = {dummy, favourites,  emergency, missed, dialed, received};
+    private String[][] menus = { dummy, primaryMenu, secondaryMenu};
+    private int directionIndicator = 0;
+    private int menuCursorPosition = 0;
+    private String currentMenuName = "todo";
+    private int navLevel = 1;
+    private String currentContact = "noOne";
     /**
      * The formatted location address.
      */
@@ -118,10 +134,11 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
      */
     protected TextView mLocationAddressTextView;
 
+
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            MyoRemoteService.MBinder mbinder = ((MyoRemoteService.MBinder)service);
+            MyoRemoteService.MBinder mbinder = ((MyoRemoteService.MBinder) service);
             mService = mbinder.getService();
 
             if (mListener == null) {
@@ -180,8 +197,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         mPrefs = new AppPrefs(this);
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
-        if (sharedpreferences.contains(SpeakBoolean))
-        {
+        if (sharedpreferences.contains(SpeakBoolean)) {
             speak = sharedpreferences.getBoolean(SpeakBoolean, false);
 
         }
@@ -255,11 +271,11 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             case R.id.kill_myglass:
                 killMyGlass();
                 return true;
-            case R.id.speak_text :
+            case R.id.speak_text:
                 SharedPreferences.Editor editor = sharedpreferences.edit();
 
                 item.setChecked(!item.isChecked());
-                if(item.isChecked()){
+                if (item.isChecked()) {
                     speak = true;
                 } else {
                     speak = false;
@@ -281,9 +297,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
     public void onScreencastBtn(View view) {
         setScreencastEnabled(!mScreencastEnabled);
-        if (mScreencastEnabled){
+        if (mScreencastEnabled) {
             mGlass.requestScreenshot();
-        } else{
+        } else {
             mGlass.stopScreenshot();
         }
         stopLocationUpdates();
@@ -313,7 +329,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         updateScreencastState();
     }
 
-    private void updateScreencastState(){
+    private void updateScreencastState() {
         //mScreencastButton.setText(mScreencastEnabled ? R.string.stop : R.string.start);
         //mScreencastView.setVisibility(mScreencastEnabled ? View.VISIBLE : View.INVISIBLE);
     }
@@ -447,13 +463,61 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
             mPoseView.setText(pose.name());
-            if(pose == pose.FIST) {
-                startLocationUpdates();
-            } else if(pose == pose.FINGERS_SPREAD) {
-                stopLocationUpdates();
-                speakOut("Location Updates Stopped");
-            }
+            if (pose == pose.FIST) {
+                //startLocationUpdates();
+                //speakOut("Wave right for favourites");
 
+            } else if (pose == pose.FINGERS_SPREAD) {
+                menuCursorPosition = 0;
+                directionIndicator = 0;
+                if (navLevel > 1) {
+                    navLevel--;
+                }
+                speakOut("Wave right for favourites");
+                //stopLocationUpdates();
+                //speakOut("Location Updates Stopped");
+            } else if (pose == pose.WAVE_OUT) {
+                if(navLevel == 1) {
+                    if(directionIndicator == 0){
+                        directionIndicator = 1;
+                    }
+                    incrementMenuCursorPosition(menus[directionIndicator]);
+                    currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                    speakOut(currentMenuName);
+                } else if(navLevel == 2){
+                    incrementMenuCursorPosition(callLists[1]);
+                    currentContact = callLists[1][menuCursorPosition-1];
+                    speakOut(currentContact);
+                }
+
+            } else if(pose == pose.WAVE_IN) {
+                if(navLevel == 1) {
+                    if(directionIndicator == 0) {
+                        directionIndicator = 2;
+                    }
+                    decrementMenuCursorPosition(menus[directionIndicator]);
+                    currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                    speakOut(currentMenuName);
+                } else if(navLevel == 2) {
+                    decrementMenuCursorPosition(callLists[1]);
+                    currentContact = callLists[1][menuCursorPosition-1];
+                    speakOut(currentContact);
+                }
+
+            } else if(pose == pose.DOUBLE_TAP) {
+                String s = currentMenuName.toLowerCase();
+                if (s.equals("favourites")) {
+                    navLevel = 2;
+                    menuCursorPosition = 0;
+                    speakOut("Wave right for contact names");
+
+                } else if (s.equals("missed")) {
+                } else if (s.equals("dialed")) {
+                } else if (s.equals("received")) {
+                } else if (s.equals("emergency")) {
+                } else {
+                }
+            }
         }
 
         @Override
@@ -467,6 +531,26 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         }
     }
 
+    public void openList(String listName){
+
+    }
+
+    public void incrementMenuCursorPosition(String[] array) {
+        if (menuCursorPosition < (array.length)) {
+            menuCursorPosition++;
+        } else {
+            menuCursorPosition = 1;
+        }
+    }
+
+    public void decrementMenuCursorPosition(String[] array) {
+        if (menuCursorPosition > 1) {
+            menuCursorPosition--;
+        } else {
+            menuCursorPosition = array.length;
+        }
+    }
+
     @Override
     public void onConnectionStatusChanged(GlassDevice.ConnectionStatus status) {
         updateGlassStatus(status);
@@ -476,7 +560,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     // Called when a message from Glass is received
-    public void onReceivedEnvelope(Proto.Envelope envelope){
+    public void onReceivedEnvelope(Proto.Envelope envelope) {
         if (envelope.screenshot != null) {
             if (envelope.screenshot.screenshotBytesG2C != null) {
                 InputStream in = new ByteArrayInputStream(envelope.screenshot.screenshotBytesG2C);
@@ -502,7 +586,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         }
 
         /**
-         *  Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
+         * Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
          */
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
@@ -511,8 +595,8 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
             //displayAddressOutput();
             String lines[] = mAddressOutput.split("\\r?\\n");
-            showToast(lines[1]);
-            speakOut(lines[1]);
+            //showToast(lines[1]);
+            //speakOut(lines[1]);
 
             // Show a toast message if an address was found.
             if (resultCode == Constants.SUCCESS_RESULT) {
@@ -553,7 +637,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
     private void speakOut(String text) {
         //String text = txtText.getText().toString();
-        if(!text.equals("STOP") && speak){
+        if (!text.equals("STOP") && speak) {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
         }
     }
@@ -575,13 +659,13 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     protected void startLocationUpdates() {
         mRequestingLocationUpdates = true;
         LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest,this );
+                mGoogleApiClient, mLocationRequest, this);
     }
 
     protected void stopLocationUpdates() {
         mRequestingLocationUpdates = false;
         LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient,this);
+                mGoogleApiClient, this);
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
