@@ -107,10 +107,10 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     private String[] primaryMenu = {"Favourites", "Emergency"};
     private String[] secondaryMenu = {"Missed", "Dialed", "Received"};
     private String[] favourites = {"Davide", "Alex", "Lisa", "John"};
-    private String[] emergency = {"Davide", "Alex", "Lisa", "John"};
-    private String[] missed = {"Davide", "Alex", "Lisa", "John"};
-    private String[] dialed = {"Davide", "Alex", "Lisa", "John"};
-    private String[] received = {"Davide", "Alex", "Lisa", "John"};
+    private String[] emergency = {"Mom", "Dad", "Sister", "John"};
+    private String[] missed = {"Shilpa", "Steve", "Ram", "Rahul"};
+    private String[] dialed = {"Dad", "Davide", "Lisa", "John"};
+    private String[] received = {"Amanda", "Jill", "Roche", "Haxley"};
     private String[] dummy = {"a", "b"};
     private String[][] callLists = {dummy, favourites,  emergency, missed, dialed, received};
     private String[][] menus = { dummy, primaryMenu, secondaryMenu};
@@ -119,6 +119,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     private String currentMenuName = "todo";
     private int navLevel = 1;
     private String currentContact = "noOne";
+    private int secondNavSelection = 0;
     /**
      * The formatted location address.
      */
@@ -247,6 +248,12 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             startLocationUpdates();
         }
+
+        /* Resetting variables for phone application */
+        directionIndicator = 0;
+        menuCursorPosition = 0;
+        navLevel = 1;
+        //speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
     }
 
     @Override
@@ -466,14 +473,18 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             if (pose == pose.FIST) {
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
-
+                if(navLevel == 1){
+                    speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
+                } else if(navLevel == 2) {
+                    speakOut("Wave right to browse through contacts.");
+                }
             } else if (pose == pose.FINGERS_SPREAD) {
                 menuCursorPosition = 0;
                 directionIndicator = 0;
                 if (navLevel > 1) {
                     navLevel--;
                 }
-                speakOut("Wave right for favourites");
+                speakOut("You are back to the start");
                 //stopLocationUpdates();
                 //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
@@ -481,12 +492,19 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     if(directionIndicator == 0){
                         directionIndicator = 1;
                     }
-                    incrementMenuCursorPosition(menus[directionIndicator]);
-                    currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                    speakOut(currentMenuName);
+                    if(directionIndicator == 1) {
+                        incrementMenuCursorPosition(menus[directionIndicator]);
+                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                        speakOut(currentMenuName);
+                    } else {
+                        decrementMenuCursorPosition(menus[directionIndicator]);
+                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                        speakOut(currentMenuName);
+                    }
+
                 } else if(navLevel == 2){
-                    incrementMenuCursorPosition(callLists[1]);
-                    currentContact = callLists[1][menuCursorPosition-1];
+                    incrementMenuCursorPosition(callLists[secondNavSelection]);
+                    currentContact = callLists[secondNavSelection][menuCursorPosition-1];
                     speakOut(currentContact);
                 }
 
@@ -495,27 +513,47 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     if(directionIndicator == 0) {
                         directionIndicator = 2;
                     }
-                    decrementMenuCursorPosition(menus[directionIndicator]);
-                    currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                    speakOut(currentMenuName);
+                    if(directionIndicator == 1){
+                        decrementMenuCursorPosition(menus[directionIndicator]);
+                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                        speakOut(currentMenuName);
+                    } else if (directionIndicator == 2) {
+                        incrementMenuCursorPosition(menus[directionIndicator]);
+                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                        speakOut(currentMenuName);
+                    }
+
                 } else if(navLevel == 2) {
-                    decrementMenuCursorPosition(callLists[1]);
-                    currentContact = callLists[1][menuCursorPosition-1];
+                    decrementMenuCursorPosition(callLists[secondNavSelection]);
+                    currentContact = callLists[secondNavSelection][menuCursorPosition-1];
                     speakOut(currentContact);
                 }
 
             } else if(pose == pose.DOUBLE_TAP) {
-                String s = currentMenuName.toLowerCase();
-                if (s.equals("favourites")) {
-                    navLevel = 2;
-                    menuCursorPosition = 0;
-                    speakOut("Wave right for contact names");
-
-                } else if (s.equals("missed")) {
-                } else if (s.equals("dialed")) {
-                } else if (s.equals("received")) {
-                } else if (s.equals("emergency")) {
-                } else {
+                if(navLevel == 1) {
+                    String s = currentMenuName.toLowerCase();
+                    if (s.equals("favourites")) {
+                        secondNavSelection = 1;
+                        secondNavLevelAction();
+                    } else if (s.equals("missed")) {
+                        secondNavSelection = 3;
+                        secondNavLevelAction();
+                    } else if (s.equals("dialed")) {
+                        secondNavSelection = 4;
+                        secondNavLevelAction();
+                    } else if (s.equals("received")) {
+                        secondNavSelection = 5;
+                        secondNavLevelAction();
+                    } else if (s.equals("emergency")) {
+                        secondNavSelection = 2;
+                        secondNavLevelAction();
+                    } else {
+                        secondNavLevelAction();
+                    }
+                } else if(navLevel == 2) {
+                    Uri number = Uri.parse("tel:3176409616");
+                    Intent callIntent = new Intent(Intent.ACTION_CALL, number);
+                    startActivity(callIntent);
                 }
             }
         }
@@ -549,6 +587,12 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         } else {
             menuCursorPosition = array.length;
         }
+    }
+
+    public void secondNavLevelAction(){
+        navLevel = 2;
+        menuCursorPosition = 0;
+        speakOut("Wave right to browse through contacts.");
     }
 
     @Override
