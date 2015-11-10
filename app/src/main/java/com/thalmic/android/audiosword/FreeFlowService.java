@@ -1,9 +1,12 @@
 package com.thalmic.android.audiosword;
 
 import android.app.IntentService;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+
+import java.util.HashMap;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -21,6 +24,10 @@ public class FreeFlowService extends IntentService {
     // TODO: Rename parameters
     private static final String EXTRA_PARAM1 = "com.thalmic.android.audiosword.extra.PARAM1";
     private static final String EXTRA_PARAM2 = "com.thalmic.android.audiosword.extra.PARAM2";
+
+
+    public String[] params = ConfigActivity.callLists[ConfigActivity.secondNavSelection];
+    public static HashMap<String, String> map = new HashMap<String, String>();
 
     /**
      * Starts this service to perform action Foo with the given parameters. If
@@ -70,17 +77,24 @@ public class FreeFlowService extends IntentService {
                 handleActionBaz(param1, param2);
             }
         }
+        ConfigActivity.tts.setOnUtteranceProgressListener(new ttsUtteranceListener());
+        ConfigActivity.incrementMenuCursorPosition(params);
+        speakText(params);
 
-        String[] params = ConfigActivity.callLists[ConfigActivity.secondNavSelection];
-        do {
-            ConfigActivity.menuCursorPosition = 0;
-            for(int i = ConfigActivity.menuCursorPosition; i<params.length; i++) {
-                ConfigActivity.menuCursorPosition++;
-                ConfigActivity.currentContact = params[ConfigActivity.menuCursorPosition-1];
-                ConfigActivity.addSpeechtoQueue(ConfigActivity.currentContact);
-                ConfigActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
-            }
-        } while (ConfigActivity.freeFlow == Boolean.TRUE);
+//        do {
+//            Log.d("freeflow", "me");
+//            if(!ConfigActivity.tts.isSpeaking()){
+//                ConfigActivity.menuCursorPosition = 0;
+//                for(int i = ConfigActivity.menuCursorPosition; i<params.length; i++) {
+//                    ConfigActivity.menuCursorPosition++;
+//                    ConfigActivity.currentContact = params[ConfigActivity.menuCursorPosition-1];
+//
+//                    ConfigActivity.addSpeechtoQueue(ConfigActivity.currentContact);
+//                    ConfigActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
+//                }
+//            }
+//
+//        } while (ConfigActivity.freeFlow == Boolean.TRUE);
     }
 
     /**
@@ -100,4 +114,34 @@ public class FreeFlowService extends IntentService {
         // TODO: Handle action Baz
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+    public static void speakText(String[] params) {
+        ConfigActivity.currentContact = params[ConfigActivity.menuCursorPosition-1];
+        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, ConfigActivity.currentContact);
+        ConfigActivity.tts.speak(ConfigActivity.currentContact, TextToSpeech.QUEUE_ADD, map);
+
+    }
 }
+class ttsUtteranceListener extends UtteranceProgressListener {
+
+    public String[] params = ConfigActivity.callLists[ConfigActivity.secondNavSelection];
+
+    @Override
+    public void onDone(String utteranceId) {
+        ConfigActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
+        if( ConfigActivity.freeFlow == Boolean.TRUE ) {
+            ConfigActivity.incrementMenuCursorPosition(params);
+            FreeFlowService.speakText(params);
+        }
+    }
+
+    @Override
+    public void onError(String utteranceId) {
+    }
+
+    @Override
+    public void onStart(String utteranceId) {
+    }
+
+}
+

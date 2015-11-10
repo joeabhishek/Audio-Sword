@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -475,6 +476,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             mArmView.setText(R.string.myo_arm_unknown);
         }
 
+
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
             mPoseView.setText(pose.name());
@@ -559,9 +561,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     }
                 } else if(navLevel == 2) {
                     stopFreeFlow();
-                    Uri number = Uri.parse("tel:3176409616");
-                    Intent callIntent = new Intent(Intent.ACTION_CALL, number);
-                    startActivity(callIntent);
+                    speakOut(currentContact);
+                    tts.setOnUtteranceProgressListener(new ttsUtteranceListenerMain());
+                    callContact();
                 }
             }
         }
@@ -574,6 +576,11 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onUnlock(Myo myo, long timestamp) {
             mPoseView.setText("UNLOCKED");
+            if(navLevel == 2) {
+                stopFreeFlow();
+                currentContact = callLists[secondNavSelection][menuCursorPosition-1];
+                speakOut(currentContact);
+            }
         }
     }
 
@@ -626,6 +633,13 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         stopService(freeFlowIntent);
         //freeFlowTask.cancel(Boolean.TRUE);
     }
+
+    public void callContact(){
+        Uri number = Uri.parse("tel:3176409616");
+        Intent callIntent = new Intent(Intent.ACTION_CALL, number);
+        startActivity(callIntent);
+    }
+
 
     private class freeFlowTask extends AsyncTask<String, Void, String[]> {
 
@@ -827,4 +841,25 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             updateUI();
         }
     }
+}
+
+class ttsUtteranceListenerMain extends UtteranceProgressListener {
+
+    public String[] params = ConfigActivity.callLists[ConfigActivity.secondNavSelection];
+
+    @Override
+    public void onDone(String utteranceId) {
+        if( ConfigActivity.navLevel == 2 ) {
+
+        }
+    }
+
+    @Override
+    public void onError(String utteranceId) {
+    }
+
+    @Override
+    public void onStart(String utteranceId) {
+    }
+
 }
