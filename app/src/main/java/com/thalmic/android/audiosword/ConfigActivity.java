@@ -563,7 +563,14 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     stopFreeFlow();
                     speakOut(currentContact);
                     tts.setOnUtteranceProgressListener(new ttsUtteranceListenerMain());
-                    callContact();
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            callContact();
+                        }
+                    }, 500);
+
                 }
             }
         }
@@ -635,6 +642,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     public void callContact(){
+        tts.stop();
         Uri number = Uri.parse("tel:3176409616");
         Intent callIntent = new Intent(Intent.ACTION_CALL, number);
         startActivity(callIntent);
