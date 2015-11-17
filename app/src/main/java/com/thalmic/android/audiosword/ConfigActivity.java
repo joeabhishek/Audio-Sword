@@ -103,6 +103,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     SharedPreferences sharedpreferences;
     public static final String SpeakBoolean = "speakBoolean";
     public static boolean speak = false;
+    Handler handler = new Handler();
 
     /* Phone menu items */
 
@@ -540,22 +541,27 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
             } else if(pose == pose.DOUBLE_TAP) {
                 if(navLevel == 1) {
-                    String s = currentMenuName.toLowerCase();
+                    final String s = currentMenuName.toLowerCase();
                     if (s.equals("favourites")) {
                         secondNavSelection = 1;
-                        secondNavLevelAction(s);
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
                     } else if (s.equals("missed")) {
                         secondNavSelection = 3;
-                        secondNavLevelAction(s);
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
                     } else if (s.equals("dialed")) {
                         secondNavSelection = 4;
-                        secondNavLevelAction(s);
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
                     } else if (s.equals("received")) {
                         secondNavSelection = 5;
-                        secondNavLevelAction(s);
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
                     } else if (s.equals("emergency")) {
                         secondNavSelection = 2;
-                        secondNavLevelAction(s);
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
                     } else {
                         secondNavLevelAction(s);
                     }
@@ -563,7 +569,6 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     stopFreeFlow();
                     speakOut(currentContact);
                     tts.setOnUtteranceProgressListener(new ttsUtteranceListenerMain());
-                    Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -573,6 +578,15 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
                 }
             }
+        }
+
+        public void callFunctionWithDelay(int delay, final String s) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    secondNavLevelAction(s);
+                }
+            }, delay);
         }
 
         @Override
@@ -665,7 +679,6 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     }
                 }
             } while (freeFlow == Boolean.TRUE);
-
             return null;
         }
 
@@ -697,7 +710,6 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             if (envelope.screenshot.screenshotBytesG2C != null) {
                 InputStream in = new ByteArrayInputStream(envelope.screenshot.screenshotBytesG2C);
                 final Bitmap bp = BitmapFactory.decodeStream(in);
-
                 // Update the UI
                 runOnUiThread(new Runnable() {
                     @Override
