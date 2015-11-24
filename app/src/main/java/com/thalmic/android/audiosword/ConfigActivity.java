@@ -16,13 +16,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -125,6 +123,8 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public static int secondNavSelection = 0;
     public static String menuName = "noName";
     public static Boolean freeFlow = Boolean.TRUE;
+    public static Boolean callConfirmation = Boolean.FALSE;
+    public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
@@ -491,11 +491,23 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 directionIndicator = 0;
                 if (navLevel > 1) {
                     navLevel--;
+                    lockConfirmation = Boolean.FALSE;
                 }
-                speakOut("You are back to the start");
+                if(navLevel == 1){
+                    if(lockConfirmation == Boolean.TRUE) {
+                        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                        speakOut("locking");
+                        myo.lock();
+                    } else {
+                        speakOut("You are back to the start");
+                        lockConfirmation = Boolean.TRUE;
+                    }
+                }
+                callConfirmation = Boolean.FALSE;
                 //stopLocationUpdates();
                 //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
+                Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
                 if(navLevel == 1) {
                     if(directionIndicator == 0){
                         directionIndicator = 1;
@@ -518,6 +530,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 }
 
             } else if(pose == pose.WAVE_IN) {
+                Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
                 if(navLevel == 1) {
                     if(directionIndicator == 0) {
                         directionIndicator = 2;
@@ -568,17 +581,23 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 } else if(navLevel == 2) {
                     stopFreeFlow();
                     speakOut(currentContact);
-                    tts.setOnUtteranceProgressListener(new ttsUtteranceListenerMain());
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            callContact();
-                        }
-                    }, 500);
+                    if(callConfirmation) {
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                callContact();
+                            }
+                        }, 500);
+                        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                    } else {
+                        callConfirmation = Boolean.TRUE;
+                    }
 
                 }
             }
         }
+
+
 
         public void callFunctionWithDelay(int delay, final String s) {
             handler.postDelayed(new Runnable() {
@@ -591,22 +610,14 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
         @Override
         public void onLock(Myo myo, long timestamp) {
+            //myo.vibrate(Myo.VibrationType.SHORT);
             mPoseView.setText("LOCKED");
         }
 
         @Override
         public void onUnlock(Myo myo, long timestamp) {
             mPoseView.setText("UNLOCKED");
-            if(navLevel == 2) {
-                stopFreeFlow();
-                currentContact = callLists[secondNavSelection][menuCursorPosition-1];
-                speakOut(currentContact);
-            }
         }
-    }
-
-    public void openList(String listName){
-
     }
 
     public void help(){
@@ -618,6 +629,12 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     public static void incrementMenuCursorPosition(String[] array) {
+        if(freeFlow == Boolean.FALSE) {
+            callConfirmation = Boolean.TRUE;
+        } else {
+            callConfirmation = Boolean.FALSE;
+        }
+
         if (menuCursorPosition < (array.length)) {
             menuCursorPosition++;
         } else {
@@ -626,6 +643,11 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     public static void decrementMenuCursorPosition(String[] array) {
+        if(freeFlow == Boolean.FALSE) {
+            callConfirmation = Boolean.TRUE;
+        } else {
+            callConfirmation = Boolean.FALSE;
+        }
         if (menuCursorPosition > 1) {
             menuCursorPosition--;
         } else {
@@ -638,21 +660,18 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         menuCursorPosition = 0;
         menuName = s;
         tts.stop();
-        //speakOut("You selected the " + menuName + " list.");
         startFreeFlow(callLists[secondNavSelection]);
     }
 
     public void startFreeFlow(String[] array) {
         freeFlow = Boolean.TRUE;
         startService(freeFlowIntent);
-        //freeFlowTask.execute(array);
     }
 
     public void stopFreeFlow() {
         freeFlow = Boolean.FALSE;
         tts.stop();
         stopService(freeFlowIntent);
-        //freeFlowTask.cancel(Boolean.TRUE);
     }
 
     public void callContact(){
@@ -660,40 +679,6 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         Uri number = Uri.parse("tel:3176409616");
         Intent callIntent = new Intent(Intent.ACTION_CALL, number);
         startActivity(callIntent);
-    }
-
-
-    private class freeFlowTask extends AsyncTask<String, Void, String[]> {
-
-        @Override
-        protected String[] doInBackground(String... params) {
-            do {
-                for(int i = menuCursorPosition; i<params.length; i++) {
-                    if( freeFlow == Boolean.FALSE) {
-                        break;
-                    } else {
-                        incrementMenuCursorPosition(params);
-                        currentContact = params[menuCursorPosition-1];
-                        addSpeechtoQueue(currentContact);
-                        tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
-                    }
-                }
-            } while (freeFlow == Boolean.TRUE);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String[] result) {
-        }
-
-        @Override
-        protected void onPreExecute() {}
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-
-        }
-
     }
 
     @Override
@@ -863,23 +848,3 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 }
 
-class ttsUtteranceListenerMain extends UtteranceProgressListener {
-
-    public String[] params = ConfigActivity.callLists[ConfigActivity.secondNavSelection];
-
-    @Override
-    public void onDone(String utteranceId) {
-        if( ConfigActivity.navLevel == 2 ) {
-
-        }
-    }
-
-    @Override
-    public void onError(String utteranceId) {
-    }
-
-    @Override
-    public void onStart(String utteranceId) {
-    }
-
-}
