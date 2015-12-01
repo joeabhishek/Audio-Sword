@@ -34,4 +34,10 @@
     <string name="invalid_lat_long_used">Invalid latitude or longitude used</string>
 
     <string name="action_speak">Speak Messages</string>
+
+    <string name="dialer_app">Dialer</string>
+    <string name="yelp_app">Yelp</string>
+    <string name="title_activity_yelp">YelpActivity</string>
+
+    <string name="hello_world">Hello world!</string>
 </resources>

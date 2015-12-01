@@ -53,7 +53,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
-public class ConfigActivity extends Activity implements GlassDevice.GlassConnectionListener,
+public class YelpActivity extends Activity implements GlassDevice.GlassConnectionListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener,
@@ -103,24 +103,30 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public static boolean speak = false;
     Handler handler = new Handler();
 
-    /* Phone menu items */
-    public static String[] primaryMenu = {"Favourites", "Emergency"};
-    public static String[] secondaryMenu = {"Missed", "Dialed", "Received"};
-    public static String[] favourites = {"Davide", "Alex", "Lisa", "John"};
+    /* Yelp App */
+    public static String[] primaryMenu = {"Favourites", "Restaurants", "Coffee", "Bars"};
+    public static String[] secondaryMenu = {"Delivery", "Reservations", "More"};
+    public static String[] favourites = {"Bucca Di Beppo", "olive Garden", "Osterio Pronto", "Qdoba", "Wasabi"};
+    public static String[] restOptions = {"Navigate", "Call", "Bookmark"};
     public static String[] emergency = {"Mom", "Dad", "Sister", "John"};
     public static String[] missed = {"Shilpa", "Steve", "Ram", "Rahul"};
     public static String[] dialed = {"Dad", "Davide", "Lisa", "John"};
     public static String[] received = {"Amanda", "Jill", "Roche", "Haxley"};
     public static String[] dummy = {"a", "b"};
-    public static String[][] callLists = {dummy, favourites,  emergency, missed, dialed, received};
+    public static String[][] optionLists = {dummy, favourites,  favourites, favourites, favourites, favourites, favourites, favourites};
     public static String[][] menus = { dummy, primaryMenu, secondaryMenu};
     public static int directionIndicator = 0;
     public static int menuCursorPosition = 0;
     public static String currentMenuName = "todo";
+    public static String currentRestOption = "todo";
+    public static String currentRestaurant = "todo";
     public static int navLevel = 1;
     public static String currentContact = "noOne";
     public static int secondNavSelection = 0;
-    public static String menuName = "noName";
+    public static int thirdNavSelection = 0;
+    public static String helpMenuName = "noName";
+    public static String helpRestName = "noName";
+    public static String helpRestOption = "noName";
     public static Boolean freeFlow = Boolean.TRUE;
     public static Boolean callConfirmation = Boolean.FALSE;
     public static Boolean lockConfirmation = Boolean.FALSE;
@@ -155,7 +161,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             }
 
             mGlass = mService.getMyoRemote().getGlassDevice();
-            mGlass.registerListener(ConfigActivity.this);
+            mGlass.registerListener(YelpActivity.this);
             updateGlassStatus(mGlass.getConnectionStatus());
 
             String glassAddress = mPrefs.getGlassAddress();
@@ -189,7 +195,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         Intent intent = new Intent(this, MyoRemoteService.class);
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
-        freeFlowIntent = new Intent(this, FreeFlowService.class);
+        freeFlowIntent = new Intent(this, YelpFreeFlowService.class);
 
         registerReceiver(mStopReceiver, new IntentFilter(MyoRemoteService.ACTION_STOP_MYO_GLASS));
 
@@ -322,14 +328,14 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         speakOut("Location Updates Stopped");
     }
 
-    public void openYelpApplication(View view) {
-        Intent intent = new Intent(this, YelpActivity.class);
+    public void openDialerApplication(View view) {
+        Intent intent = new Intent(this, ConfigActivity.class);
         startActivity(intent);
         finish();
     }
 
-    public void openDialerApplication(View view) {
-        Intent intent = new Intent(this, ConfigActivity.class);
+    public void openYelpApplication(View view) {
+        Intent intent = new Intent(this, YelpActivity.class);
         startActivity(intent);
         finish();
     }
@@ -432,7 +438,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
      */
     protected void startIntentService() {
         // Create an intent for passing to the intent service responsible for fetching the address.
-        Intent intent = new Intent(ConfigActivity.this, FetchAddressIntentService.class);
+        Intent intent = new Intent(YelpActivity.this, FetchAddressIntentService.class);
 
         // Pass the result receiver as an extra to the service.
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
@@ -502,6 +508,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 directionIndicator = 0;
                 if (navLevel > 1) {
                     navLevel--;
+                    help();
                     lockConfirmation = Boolean.FALSE;
                 }
                 if(navLevel == 1){
@@ -535,9 +542,16 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
                 } else if(navLevel == 2){
                     stopFreeFlow();
-                    incrementMenuCursorPosition(callLists[secondNavSelection]);
-                    currentContact = callLists[secondNavSelection][menuCursorPosition-1];
+                    incrementMenuCursorPosition(optionLists[secondNavSelection]);
+                    currentContact = optionLists[secondNavSelection][menuCursorPosition-1];
+                    //helpMenuName = currentContact;
                     speakOut(currentContact);
+                } else if(navLevel == 3){
+                    stopFreeFlow();
+                    incrementMenuCursorPosition(restOptions);
+                    currentRestOption = restOptions[menuCursorPosition-1];
+                    helpRestOption = currentRestOption;
+                    speakOut(currentRestOption);
                 }
 
             } else if(pose == pose.WAVE_IN) {
@@ -555,12 +569,18 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                         speakOut(currentMenuName);
                     }
-
                 } else if(navLevel == 2) {
                     stopFreeFlow();
-                    decrementMenuCursorPosition(callLists[secondNavSelection]);
-                    currentContact = callLists[secondNavSelection][menuCursorPosition-1];
+                    decrementMenuCursorPosition(optionLists[secondNavSelection]);
+                    currentContact = optionLists[secondNavSelection][menuCursorPosition-1];
+                    //helpMenuName = currentContact;
                     speakOut(currentContact);
+                } else if(navLevel == 3) {
+                    stopFreeFlow();
+                    decrementMenuCursorPosition(restOptions);
+                    currentRestOption = restOptions[menuCursorPosition-1];
+                    helpRestOption = currentRestOption;
+                    speakOut(currentRestOption);
                 }
 
             } else if(pose == pose.DOUBLE_TAP) {
@@ -570,40 +590,100 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                         secondNavSelection = 1;
                         speakOut(s);
                         callFunctionWithDelay(1000, s);
-                    } else if (s.equals("missed")) {
-                        secondNavSelection = 3;
-                        speakOut(s);
-                        callFunctionWithDelay(1000, s);
-                    } else if (s.equals("dialed")) {
-                        secondNavSelection = 4;
-                        speakOut(s);
-                        callFunctionWithDelay(1000, s);
-                    } else if (s.equals("received")) {
-                        secondNavSelection = 5;
-                        speakOut(s);
-                        callFunctionWithDelay(1000, s);
-                    } else if (s.equals("emergency")) {
+                    } else if (s.equals("restaurants")) {
                         secondNavSelection = 2;
                         speakOut(s);
                         callFunctionWithDelay(1000, s);
+                    } else if (s.equals("coffee")) {
+                        secondNavSelection = 3;
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
+                    } else if (s.equals("bars")) {
+                        secondNavSelection = 4;
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
+                    } else if (s.equals("delivery")) {
+                        secondNavSelection = 5;
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
+                    } else if (s.equals("reservations")) {
+                        secondNavSelection = 6;
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
+                    } else if (s.equals("more")) {
+                        secondNavSelection = 7;
+                        speakOut(s);
+                        callFunctionWithDelay(1000, s);
                     } else {
-                        secondNavLevelAction(s);
+                        callFunctionWithDelay(1000, s);
                     }
                 } else if(navLevel == 2) {
                     stopFreeFlow();
                     speakOut(currentContact);
+                    final String s = currentContact;
                     if(callConfirmation) {
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                callContact();
+                                thirdNavLevelAction(s);
                             }
-                        }, 500);
-                        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                        }, 1500);
                     } else {
                         callConfirmation = Boolean.TRUE;
                     }
+                } else if(navLevel == 3) {
+                    currentRestOption = restOptions[menuCursorPosition-1];
+                    final String s = currentRestOption.toLowerCase();
+                    speakOut(currentRestOption);
+                    if (s.equals("navigate")) {
+                        secondNavSelection = 1;
+                        speakOut(s);
+                        helpRestOption = s;
+                        if(callConfirmation) {
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    speakOut("In 100 feet take a right");
+                                    //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                                }
+                            }, 1000);
+                        } else {
+                            callConfirmation = Boolean.TRUE;
+                        }
 
+                    } else if (s.equals("call")) {
+                        secondNavSelection = 2;
+                        speakOut(s);
+                        helpRestOption = s;
+                        if(callConfirmation) {
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    callContact();
+                                    //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                                }
+                            }, 1000);
+                        } else {
+                            callConfirmation = Boolean.TRUE;
+                        }
+
+                    } else if (s.equals("bookmark")) {
+                        secondNavSelection = 3;
+                        speakOut(s);
+                        helpRestOption = s;
+                        if(callConfirmation) {
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    speakOut("Added to favourites");
+                                    //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                                }
+                            }, 1000);
+                        } else {
+                            callConfirmation = Boolean.TRUE;
+                        }
+
+                    }
                 }
             }
         }
@@ -633,9 +713,11 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
     public void help(){
         if(navLevel == 1){
-            speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
+            speakOut("Wave right for Restaurants, Coffee shops and Bars. Wave left for Delivery Reservations and More.");
         } else if(navLevel == 2) {
-            speakOut("Wave right to browse through " + menuName);
+            speakOut("Wave right to browse " + helpMenuName);
+        } else if(navLevel == 3) {
+            speakOut("Wave Right to browse options for" + helpRestName);
         }
     }
 
@@ -659,6 +741,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         } else {
             callConfirmation = Boolean.FALSE;
         }
+
         if (menuCursorPosition > 1) {
             menuCursorPosition--;
         } else {
@@ -669,9 +752,17 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public void secondNavLevelAction(String s){
         navLevel = 2;
         menuCursorPosition = 0;
-        menuName = s;
+        helpMenuName = s;
         tts.stop();
-        startFreeFlow(callLists[secondNavSelection]);
+        startFreeFlow(optionLists[secondNavSelection]);
+    }
+
+    public void thirdNavLevelAction(String s){
+        navLevel = 3;
+        menuCursorPosition = 0;
+        helpRestName = s;
+        tts.stop();
+        startFreeFlow(restOptions);
     }
 
     public void startFreeFlow(String[] array) {

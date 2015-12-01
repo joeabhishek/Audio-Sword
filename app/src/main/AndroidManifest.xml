@@ -42,6 +42,16 @@
             android:name=".FreeFlowService"
             android:exported="false" >
         </service>
+
+        <activity
+            android:name=".YelpActivity"
+            android:label="@string/title_activity_yelp" >
+        </activity>
+
+        <service
+            android:name=".YelpFreeFlowService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>

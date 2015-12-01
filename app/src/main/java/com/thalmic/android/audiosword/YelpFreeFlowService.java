@@ -15,7 +15,7 @@ import java.util.HashMap;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class FreeFlowService extends IntentService {
+public class YelpFreeFlowService extends IntentService {
     // TODO: Rename actions, choose action names that describe tasks that this
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
     private static final String ACTION_FOO = "com.thalmic.android.audiosword.action.FOO";
@@ -26,7 +26,7 @@ public class FreeFlowService extends IntentService {
     private static final String EXTRA_PARAM2 = "com.thalmic.android.audiosword.extra.PARAM2";
 
 
-    public String[] params = ConfigActivity.callLists[ConfigActivity.secondNavSelection];
+    public String[] params = YelpActivity.optionLists[YelpActivity.secondNavSelection];
     public static HashMap<String, String> map = new HashMap<String, String>();
 
     /**
@@ -37,7 +37,7 @@ public class FreeFlowService extends IntentService {
      */
     // TODO: Customize helper method
     public static void startActionFoo(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, FreeFlowService.class);
+        Intent intent = new Intent(context, YelpFreeFlowService.class);
         intent.setAction(ACTION_FOO);
         intent.putExtra(EXTRA_PARAM1, param1);
         intent.putExtra(EXTRA_PARAM2, param2);
@@ -52,49 +52,25 @@ public class FreeFlowService extends IntentService {
      */
     // TODO: Customize helper method
     public static void startActionBaz(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, FreeFlowService.class);
+        Intent intent = new Intent(context, YelpFreeFlowService.class);
         intent.setAction(ACTION_BAZ);
         intent.putExtra(EXTRA_PARAM1, param1);
         intent.putExtra(EXTRA_PARAM2, param2);
         context.startService(intent);
     }
 
-    public FreeFlowService() {
+    public YelpFreeFlowService() {
         super("FreeFlow");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (intent != null) {
-            final String action = intent.getAction();
-            if (ACTION_FOO.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionFoo(param1, param2);
-            } else if (ACTION_BAZ.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionBaz(param1, param2);
-            }
+        if(YelpActivity.navLevel == 3) {
+            params = YelpActivity.restOptions;
         }
-        ConfigActivity.tts.setOnUtteranceProgressListener(new ttsUtteranceListener());
-        ConfigActivity.incrementMenuCursorPosition(params);
+        YelpActivity.tts.setOnUtteranceProgressListener(new ttsUtteranceListenerYelp());
+        YelpActivity.incrementMenuCursorPosition(params);
         speakText(params);
-
-//        do {
-//            Log.d("freeflow", "me");
-//            if(!ConfigActivity.tts.isSpeaking()){
-//                ConfigActivity.menuCursorPosition = 0;
-//                for(int i = ConfigActivity.menuCursorPosition; i<params.length; i++) {
-//                    ConfigActivity.menuCursorPosition++;
-//                    ConfigActivity.currentContact = params[ConfigActivity.menuCursorPosition-1];
-//
-//                    ConfigActivity.addSpeechtoQueue(ConfigActivity.currentContact);
-//                    ConfigActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
-//                }
-//            }
-//
-//        } while (ConfigActivity.freeFlow == Boolean.TRUE);
     }
 
     /**
@@ -116,23 +92,31 @@ public class FreeFlowService extends IntentService {
     }
 
     public static void speakText(String[] params) {
-        ConfigActivity.currentContact = params[ConfigActivity.menuCursorPosition-1];
-        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, ConfigActivity.currentContact);
-        ConfigActivity.tts.speak(ConfigActivity.currentContact, TextToSpeech.QUEUE_ADD, map);
+        YelpActivity.currentContact = params[YelpActivity.menuCursorPosition-1];
+        if(YelpActivity.navLevel == 3){
+            YelpActivity.helpRestOption = YelpActivity.currentContact;
+        }
+        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, YelpActivity.currentContact);
+        YelpActivity.tts.speak(YelpActivity.currentContact, TextToSpeech.QUEUE_ADD, map);
 
     }
 }
 
-class ttsUtteranceListener extends UtteranceProgressListener {
+class ttsUtteranceListenerYelp extends UtteranceProgressListener {
 
-    public String[] params = ConfigActivity.callLists[ConfigActivity.secondNavSelection];
+    public String[] params = YelpActivity.optionLists[YelpActivity.secondNavSelection];
 
     @Override
     public void onDone(String utteranceId) {
-        ConfigActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
-        if( ConfigActivity.freeFlow == Boolean.TRUE ) {
-            ConfigActivity.incrementMenuCursorPosition(params);
-            FreeFlowService.speakText(params);
+        YelpActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
+        if(YelpActivity.navLevel == 3){
+            params = YelpActivity.restOptions;
+        }
+        if( YelpActivity.freeFlow == Boolean.TRUE ) {
+
+            YelpActivity.incrementMenuCursorPosition(params);
+
+            YelpFreeFlowService.speakText(params);
         }
     }
 
