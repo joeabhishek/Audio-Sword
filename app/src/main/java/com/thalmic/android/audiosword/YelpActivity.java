@@ -104,16 +104,17 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     Handler handler = new Handler();
 
     /* Yelp App */
-    public static String[] primaryMenu = {"Favourites", "Restaurants", "Coffee", "Bars"};
+    public static String[] primaryMenu = {"Favourites", "Restaurants", "Coffee Shops", "Bars"};
     public static String[] secondaryMenu = {"Delivery", "Reservations", "More"};
     public static String[] favourites = {"Bucca Di Beppo", "olive Garden", "Osterio Pronto", "Qdoba", "Wasabi"};
+    public static String[] restaurants = {"Blaze Pizza", "Sushi Boss", "Delhi Palace", "Yats", "Which Wich"};
+    public static String[] coffee = {"Quills Coffee", "Mo'Joe Coffeehouse", "Starbucks", "Caribou"};
+    public static String[] bars = {"Stacked Pickle", "Charlie & barney's", "Downtown Olly's", "Bourbon Street"};
+    public static String[] delivery = {"Bucca Di Beppo", "Bento Asian Bistro", "Sushi Boss", "Topper's Pizza"};
+    public static String[] reservations = {"BurgerHaus", "Delhi Palace", "Plow And Anchor", "Al Basha"};
     public static String[] restOptions = {"Navigate", "Call", "Bookmark"};
-    public static String[] emergency = {"Mom", "Dad", "Sister", "John"};
-    public static String[] missed = {"Shilpa", "Steve", "Ram", "Rahul"};
-    public static String[] dialed = {"Dad", "Davide", "Lisa", "John"};
-    public static String[] received = {"Amanda", "Jill", "Roche", "Haxley"};
     public static String[] dummy = {"a", "b"};
-    public static String[][] optionLists = {dummy, favourites,  favourites, favourites, favourites, favourites, favourites, favourites};
+    public static String[][] optionLists = {dummy, favourites,  restaurants, coffee, bars, delivery, reservations, favourites};
     public static String[][] menus = { dummy, primaryMenu, secondaryMenu};
     public static int directionIndicator = 0;
     public static int menuCursorPosition = 0;
@@ -594,7 +595,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                         secondNavSelection = 2;
                         speakOut(s);
                         callFunctionWithDelay(1000, s);
-                    } else if (s.equals("coffee")) {
+                    } else if (s.equals("coffee shops")) {
                         secondNavSelection = 3;
                         speakOut(s);
                         callFunctionWithDelay(1000, s);
