@@ -125,6 +125,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public static Boolean callConfirmation = Boolean.FALSE;
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
+    public static String swooshEarcon;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -199,6 +200,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
+        swooshEarcon = getString(R.string.swoosh_earcon);
+        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh );
+        tts.addEarcon(getString(R.string.lock_earcon), getApplicationContext().getPackageName(), R.raw.lock );
 
         // Updating values from save instances
         updateValuesFromBundle(savedInstanceState);
@@ -507,7 +511,8 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
                         Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                        speakOut("locking");
+                        tts.speak("locking", TextToSpeech.QUEUE_ADD, null);
+                        tts.playEarcon(getString(R.string.lock_earcon), TextToSpeech.QUEUE_ADD, null);
                         myo.lock();
                     } else {
                         speakOut("You are back to the start");

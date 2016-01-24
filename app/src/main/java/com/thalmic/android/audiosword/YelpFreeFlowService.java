@@ -108,7 +108,8 @@ class ttsUtteranceListenerYelp extends UtteranceProgressListener {
 
     @Override
     public void onDone(String utteranceId) {
-        YelpActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
+        YelpActivity.tts.playEarcon(YelpActivity.swooshEarcon, TextToSpeech.QUEUE_ADD, null);
+        YelpActivity.tts.playSilence(100, TextToSpeech.QUEUE_ADD, null);
         if(YelpActivity.navLevel == 3){
             params = YelpActivity.restOptions;
         }

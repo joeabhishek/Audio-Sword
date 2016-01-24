@@ -129,6 +129,7 @@ class ttsUtteranceListener extends UtteranceProgressListener {
 
     @Override
     public void onDone(String utteranceId) {
+        ConfigActivity.tts.playEarcon(ConfigActivity.swooshEarcon, TextToSpeech.QUEUE_ADD, null);
         ConfigActivity.tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
         if( ConfigActivity.freeFlow == Boolean.TRUE ) {
             ConfigActivity.incrementMenuCursorPosition(params);

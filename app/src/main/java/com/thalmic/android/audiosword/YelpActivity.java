@@ -132,6 +132,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     public static Boolean callConfirmation = Boolean.FALSE;
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
+    public static String swooshEarcon;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -206,6 +207,9 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
+        swooshEarcon = getString(R.string.swoosh_earcon);
+        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh );
+        tts.addEarcon(getString(R.string.lock_earcon), getApplicationContext().getPackageName(), R.raw.lock );
 
         // Updating values from save instances
         updateValuesFromBundle(savedInstanceState);
@@ -515,7 +519,8 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
                         Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                        speakOut("locking");
+                        tts.speak("locking", TextToSpeech.QUEUE_ADD, null);
+                        tts.playEarcon(getString(R.string.lock_earcon), TextToSpeech.QUEUE_ADD, null);
                         myo.lock();
                     } else {
                         speakOut("You are back to the start");
@@ -527,6 +532,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+                YelpActivity.tts.playEarcon(YelpActivity.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0){
                         directionIndicator = 1;
@@ -557,6 +563,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
             } else if(pose == pose.WAVE_IN) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+                YelpActivity.tts.playEarcon(YelpActivity.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0) {
                         directionIndicator = 2;
