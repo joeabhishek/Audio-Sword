@@ -107,6 +107,9 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     public static String[] primaryMenu = {"Favourites", "Restaurants", "Coffee Shops", "Bars"};
     public static String[] secondaryMenu = {"Delivery", "Reservations", "More"};
     public static String[] favourites = {"Bucca Di Beppo", "olive Garden", "Osterio Pronto", "Qdoba", "Wasabi"};
+    public static String[] favourites_details = {"Fresh Authentic Italian Food served family style.", "American " +
+            "casual dining restaurant chain specializing in Italian American cuisine. ",
+            "Italian cuisine plus full bar and breakfast", "fast casual restaurant serving mexican style cuisine", "This is a Sushi place"};
     public static String[] restaurants = {"Blaze Pizza", "Sushi Boss", "Delhi Palace", "Yats", "Which Wich"};
     public static String[] coffee = {"Quills Coffee", "Mo'Joe Coffeehouse", "Starbucks", "Caribou"};
     public static String[] bars = {"Stacked Pickle", "Charlie & barney's", "Downtown Olly's", "Bourbon Street"};
@@ -767,9 +770,26 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
     public void thirdNavLevelAction(String s){
         navLevel = 3;
+        if(secondNavSelection == 1) {
+            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+        } else if(secondNavSelection == 2) {
+            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+        } else if(secondNavSelection == 3) {
+            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+        } else if(secondNavSelection == 4) {
+            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+        } else if(secondNavSelection == 5) {
+            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+        } else if(secondNavSelection == 6) {
+            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+        } else {
+
+        }
+
+        tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
         menuCursorPosition = 0;
         helpRestName = s;
-        tts.stop();
+        //tts.stop();
         startFreeFlow(restOptions);
     }
 
