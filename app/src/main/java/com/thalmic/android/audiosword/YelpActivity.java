@@ -111,8 +111,18 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             "casual dining restaurant chain specializing in Italian American cuisine. ",
             "Italian cuisine plus full bar and breakfast", "fast casual restaurant serving mexican style cuisine", "This is a Sushi place"};
     public static String[] restaurants = {"Blaze Pizza", "Sushi Boss", "Delhi Palace", "Yats", "Which Wich"};
-    public static String[] coffee = {"Quills Coffee", "Mo'Joe Coffeehouse", "Starbucks", "Caribou"};
+    public static String[] restaurants_details = {"Hip counter-serve pizzeria dishing up crispy, thin-crust pies made with creative toppings & sauces.",
+            "Sushi Boss is an innovative sushi concept that lets you create your own sushi rolls in any combination you desire.",
+            "Low-key Indian eatery whipping up traditional fare, including an array of vegetarian entrees.",
+            "Cajun Creole Restaurant", "Modern, casual chain known for design-your-own sandwiches & varied bread options."};
+    public static String[] coffee = {"Quills Coffee", "Mo Joe Coffeehouse", "Starbucks", "Caribou"};
+    public static String[] coffee_details = {"The latte art at this place is real", "Low-key coffee shop draws a student crowd for light lunches &" +
+            " snacks with diverse seating spaces.", "Starbucks uses the highest quality arabica coffee as the base for its beloved drinks.",
+            "Eco-conscious coffee chain offering java drinks, smoothies & teas alongside light fare & pastries."};
     public static String[] bars = {"Stacked Pickle", "Charlie & barney's", "Downtown Olly's", "Bourbon Street"};
+    public static String[] bars_details = {"Sports bar with TVs, offering basic eats such as sandwiches, wings & burgers, plus beer on tap.",
+            "Charlie and Barney's Restaurant is known for its signature chili.", "Known as the sports bar with a twist",
+            "Laid-back joint with a New Orleans feel doling out Cajun-style eats & daily drink specials."};
     public static String[] delivery = {"Bucca Di Beppo", "Bento Asian Bistro", "Sushi Boss", "Topper's Pizza"};
     public static String[] reservations = {"BurgerHaus", "Delhi Palace", "Plow And Anchor", "Al Basha"};
     public static String[] restOptions = {"Navigate", "Call", "Bookmark"};
@@ -773,11 +783,11 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
         if(secondNavSelection == 1) {
             tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
         } else if(secondNavSelection == 2) {
-            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+            tts.speak(restaurants_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
         } else if(secondNavSelection == 3) {
-            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+            tts.speak(coffee_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
         } else if(secondNavSelection == 4) {
-            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
+            tts.speak(bars_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
         } else if(secondNavSelection == 5) {
             tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
         } else if(secondNavSelection == 6) {
