@@ -215,14 +215,14 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
         registerReceiver(mStopReceiver, new IntentFilter(MyoRemoteService.ACTION_STOP_MYO_GLASS));
 
         mResultReceiver = new AddressResultReceiver(new Handler());
-        buildGoogleApiClient();
-        mGoogleApiClient.connect();
+        //buildGoogleApiClient();
+        //mGoogleApiClient.connect();
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
         swooshEarcon = getString(R.string.swoosh_earcon);
         tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh );
-        tts.addEarcon(getString(R.string.lock_earcon), getApplicationContext().getPackageName(), R.raw.lock );
+        tts.addEarcon(getString(R.string.lock_earcon), getApplicationContext().getPackageName(), R.raw.lock);
 
         // Updating values from save instances
         updateValuesFromBundle(savedInstanceState);
@@ -235,6 +235,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             speak = sharedpreferences.getBoolean(SpeakBoolean, false);
 
         }
+
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -249,6 +250,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        tts.shutdown();
         Hub.getInstance().removeListener(mListener);
         unregisterReceiver(mStopReceiver);
         unbindService(mServiceConnection);
@@ -258,16 +260,16 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     @Override
     protected void onPause() {
         super.onPause();
-        stopLocationUpdates();
+        //stopLocationUpdates();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         mGlass.stopScreenshot();
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
+//        if (mGoogleApiClient.isConnected()) {
+//            mGoogleApiClient.disconnect();
+//        }
     }
 
     @Override
@@ -278,14 +280,21 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+//        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+//            startLocationUpdates();
+//        }
 
         /* Resetting variables for phone application */
         directionIndicator = 0;
         menuCursorPosition = 0;
         navLevel = 1;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                speakOut("Yelp  ");
+                help();
+            }
+        }, 2000);
         //speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
     }
 
@@ -342,7 +351,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
         } else {
             mGlass.stopScreenshot();
         }
-        stopLocationUpdates();
+        //stopLocationUpdates();
         speakOut("Location Updates Stopped");
     }
 
@@ -367,7 +376,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             mLongitudeText = (String.valueOf(mLastLocation.getLongitude()));
 
         }
-        startLocationUpdates();
+        //startLocationUpdates();
     }
 
     protected void createLocationRequest() {
@@ -442,7 +451,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     @Override
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
+        //mGoogleApiClient.connect();
     }
 
 
@@ -532,12 +541,12 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 }
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
-                        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                        tts.speak("locking", TextToSpeech.QUEUE_ADD, null);
-                        tts.playEarcon(getString(R.string.lock_earcon), TextToSpeech.QUEUE_ADD, null);
-                        myo.lock();
+                        Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
+                        startActivity(intent);
+                        Activity activity = YelpActivity.this;
+                        activity.finish();
                     } else {
-                        speakOut("You are back to the start");
+                        speakOut("You are back to the start. Repeat the same action to go to app drawer.");
                         lockConfirmation = Boolean.TRUE;
                     }
                 }

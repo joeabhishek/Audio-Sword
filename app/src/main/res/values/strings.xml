@@ -42,4 +42,5 @@
     <string name="lock_earcon">Lock_Earcon</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_drawer">DrawerActivity</string>
 </resources>
