@@ -146,6 +146,9 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
     public static String swooshEarcon;
+    public static String selectEarcon;
+    public static String unlockEarcon;
+    public static String lockEarcon;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -221,7 +224,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
         swooshEarcon = getString(R.string.swoosh_earcon);
-        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh );
+        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh);
         tts.addEarcon(getString(R.string.lock_earcon), getApplicationContext().getPackageName(), R.raw.lock);
 
         // Updating values from save instances
@@ -235,7 +238,15 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             speak = sharedpreferences.getBoolean(SpeakBoolean, false);
 
         }
-
+        tts = new TextToSpeech(this, this);
+        swooshEarcon = getString(R.string.swoosh_earcon);
+        lockEarcon = getString(R.string.lock_earcon);
+        unlockEarcon = getString(R.string.unlock_earcon);
+        selectEarcon = getString(R.string.select_earcon);
+        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh);
+        tts.addEarcon(lockEarcon, getApplicationContext().getPackageName(), R.raw.lock);
+        tts.addEarcon(unlockEarcon, getApplicationContext().getPackageName(), R.raw.unlock);
+        tts.addEarcon(selectEarcon, getApplicationContext().getPackageName(), R.raw.select);
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -294,7 +305,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 speakOut("Yelp  ");
                 help();
             }
-        }, 2000);
+        }, 1000);
         //speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
     }
 
@@ -541,6 +552,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 }
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
+                        YelpActivity.tts.playEarcon(YelpActivity.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                         Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
                         startActivity(intent);
                         Activity activity = YelpActivity.this;

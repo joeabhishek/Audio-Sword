@@ -40,6 +40,8 @@
     <string name="title_activity_yelp">YelpActivity</string>
     <string name="swoosh_earcon">Swoosh_Earcon</string>
     <string name="lock_earcon">Lock_Earcon</string>
+    <string name="unlock_earcon">Unlock_Earcon</string>
+    <string name="select_earcon">Select_Earcon</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_drawer">DrawerActivity</string>

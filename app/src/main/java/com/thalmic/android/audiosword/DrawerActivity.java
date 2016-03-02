@@ -106,28 +106,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     /* Yelp App */
     public static String[] primaryMenu = {"Yelp", "Facebook", "Uber"};
     public static String[] secondaryMenu = {"Phone", "Calendar", "Books"};
-    public static String[] favourites = {"Bucca Di Beppo", "olive Garden", "Osterio Pronto", "Qdoba", "Wasabi"};
-    public static String[] favourites_details = {"Fresh Authentic Italian Food served family style.", "American " +
-            "casual dining restaurant chain specializing in Italian American cuisine. ",
-            "Italian cuisine plus full bar and breakfast", "fast casual restaurant serving mexican style cuisine", "This is a Sushi place"};
-    public static String[] restaurants = {"Blaze Pizza", "Sushi Boss", "Delhi Palace", "Yats", "Which Wich"};
-    public static String[] restaurants_details = {"Hip counter-serve pizzeria dishing up crispy, thin-crust pies made with creative toppings & sauces.",
-            "Sushi Boss is an innovative sushi concept that lets you create your own sushi rolls in any combination you desire.",
-            "Low-key Indian eatery whipping up traditional fare, including an array of vegetarian entrees.",
-            "Cajun Creole Restaurant", "Modern, casual chain known for design-your-own sandwiches & varied bread options."};
-    public static String[] coffee = {"Quills Coffee", "Mo Joe Coffeehouse", "Starbucks", "Caribou"};
-    public static String[] coffee_details = {"The latte art at this place is real", "Low-key coffee shop draws a student crowd for light lunches &" +
-            " snacks with diverse seating spaces.", "Starbucks uses the highest quality arabica coffee as the base for its beloved drinks.",
-            "Eco-conscious coffee chain offering java drinks, smoothies & teas alongside light fare & pastries."};
-    public static String[] bars = {"Stacked Pickle", "Charlie & barney's", "Downtown Olly's", "Bourbon Street"};
-    public static String[] bars_details = {"Sports bar with TVs, offering basic eats such as sandwiches, wings & burgers, plus beer on tap.",
-            "Charlie and Barney's Restaurant is known for its signature chili.", "Known as the sports bar with a twist",
-            "Laid-back joint with a New Orleans feel doling out Cajun-style eats & daily drink specials."};
-    public static String[] delivery = {"Bucca Di Beppo", "Bento Asian Bistro", "Sushi Boss", "Topper's Pizza"};
-    public static String[] reservations = {"BurgerHaus", "Delhi Palace", "Plow And Anchor", "Al Basha"};
-    public static String[] restOptions = {"Navigate", "Call", "Bookmark"};
     public static String[] dummy = {"a", "b"};
-    public static String[][] optionLists = {dummy, favourites,  restaurants, coffee, bars, delivery, reservations, favourites};
     public static String[][] menus = { dummy, primaryMenu, secondaryMenu};
     public static int directionIndicator = 0;
     public static int menuCursorPosition = 0;
@@ -146,6 +125,10 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
     public static String swooshEarcon;
+    public static String selectEarcon;
+    public static String unlockEarcon;
+    public static String lockEarcon;
+
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -220,9 +203,15 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
+        tts = new TextToSpeech(this, this);
         swooshEarcon = getString(R.string.swoosh_earcon);
+        lockEarcon = getString(R.string.lock_earcon);
+        unlockEarcon = getString(R.string.unlock_earcon);
+        selectEarcon = getString(R.string.select_earcon);
         tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh);
-        tts.addEarcon(getString(R.string.lock_earcon), getApplicationContext().getPackageName(), R.raw.lock);
+        tts.addEarcon(lockEarcon, getApplicationContext().getPackageName(), R.raw.lock);
+        tts.addEarcon(unlockEarcon, getApplicationContext().getPackageName(), R.raw.unlock);
+        tts.addEarcon(selectEarcon, getApplicationContext().getPackageName(), R.raw.select);
 
         // Updating values from save instances
         updateValuesFromBundle(savedInstanceState);
@@ -293,7 +282,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             public void run() {
                 help();
             }
-        }, 2000);
+        }, 1000);
         //speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
     }
 
@@ -570,20 +559,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                         speakOut(currentMenuName);
                     }
 
-                } else if(navLevel == 2){
-                    stopFreeFlow();
-                    incrementMenuCursorPosition(optionLists[secondNavSelection]);
-                    currentContact = optionLists[secondNavSelection][menuCursorPosition-1];
-                    //helpMenuName = currentContact;
-                    speakOut(currentContact);
-                } else if(navLevel == 3){
-                    stopFreeFlow();
-                    incrementMenuCursorPosition(restOptions);
-                    currentRestOption = restOptions[menuCursorPosition-1];
-                    helpRestOption = currentRestOption;
-                    speakOut(currentRestOption);
                 }
-
             } else if(pose == pose.WAVE_IN) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
                 DrawerActivity.tts.playEarcon(DrawerActivity.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
@@ -600,21 +576,9 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                         speakOut(currentMenuName);
                     }
-                } else if(navLevel == 2) {
-                    stopFreeFlow();
-                    decrementMenuCursorPosition(optionLists[secondNavSelection]);
-                    currentContact = optionLists[secondNavSelection][menuCursorPosition-1];
-                    //helpMenuName = currentContact;
-                    speakOut(currentContact);
-                } else if(navLevel == 3) {
-                    stopFreeFlow();
-                    decrementMenuCursorPosition(restOptions);
-                    currentRestOption = restOptions[menuCursorPosition-1];
-                    helpRestOption = currentRestOption;
-                    speakOut(currentRestOption);
                 }
-
             } else if(pose == pose.DOUBLE_TAP) {
+                DrawerActivity.tts.playEarcon(DrawerActivity.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("yelp")) {
@@ -637,88 +601,10 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                     } else {
 
                     }
-
-                } else if(navLevel == 2) {
-                    stopFreeFlow();
-                    speakOut(currentContact);
-                    final String s = currentContact;
-                    if(callConfirmation) {
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                thirdNavLevelAction(s);
-                            }
-                        }, 1500);
-                    } else {
-                        callConfirmation = Boolean.TRUE;
-                    }
-                } else if(navLevel == 3) {
-                    currentRestOption = restOptions[menuCursorPosition-1];
-                    final String s = currentRestOption.toLowerCase();
-                    speakOut(currentRestOption);
-                    if (s.equals("navigate")) {
-                        secondNavSelection = 1;
-                        speakOut(s);
-                        helpRestOption = s;
-                        if(callConfirmation) {
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    speakOut("In 100 feet take a right");
-                                    //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                                }
-                            }, 1000);
-                        } else {
-                            callConfirmation = Boolean.TRUE;
-                        }
-
-                    } else if (s.equals("call")) {
-                        secondNavSelection = 2;
-                        speakOut(s);
-                        helpRestOption = s;
-                        if(callConfirmation) {
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    callContact();
-                                    //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                                }
-                            }, 1000);
-                        } else {
-                            callConfirmation = Boolean.TRUE;
-                        }
-
-                    } else if (s.equals("bookmark")) {
-                        secondNavSelection = 3;
-                        speakOut(s);
-                        helpRestOption = s;
-                        if(callConfirmation) {
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    speakOut("Added to favourites");
-                                    //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                                }
-                            }, 1000);
-                        } else {
-                            callConfirmation = Boolean.TRUE;
-                        }
-
-                    }
                 }
             }
         }
 
-
-
-        public void callFunctionWithDelay(int delay, final String s) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    secondNavLevelAction(s);
-                }
-            }, delay);
-        }
 
         @Override
         public void onLock(Myo myo, long timestamp) {
@@ -729,6 +615,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onUnlock(Myo myo, long timestamp) {
             mPoseView.setText("UNLOCKED");
+
         }
     }
 
@@ -771,38 +658,6 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         }
     }
 
-    public void secondNavLevelAction(String s){
-        navLevel = 2;
-        menuCursorPosition = 0;
-        helpMenuName = s;
-        tts.stop();
-        startFreeFlow(optionLists[secondNavSelection]);
-    }
-
-    public void thirdNavLevelAction(String s){
-        navLevel = 3;
-        if(secondNavSelection == 1) {
-            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
-        } else if(secondNavSelection == 2) {
-            tts.speak(restaurants_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
-        } else if(secondNavSelection == 3) {
-            tts.speak(coffee_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
-        } else if(secondNavSelection == 4) {
-            tts.speak(bars_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
-        } else if(secondNavSelection == 5) {
-            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
-        } else if(secondNavSelection == 6) {
-            tts.speak(favourites_details[menuCursorPosition-1], TextToSpeech.QUEUE_ADD, null);
-        } else {
-
-        }
-
-        tts.playSilence(500, TextToSpeech.QUEUE_ADD, null);
-        menuCursorPosition = 0;
-        helpRestName = s;
-        //tts.stop();
-        startFreeFlow(restOptions);
-    }
 
     public void startFreeFlow(String[] array) {
         freeFlow = Boolean.TRUE;
