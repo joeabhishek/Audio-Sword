@@ -492,6 +492,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             mPrefs.setMyoAddress(myo.getMacAddress());
             mMyoStatusView.setText(R.string.connected);
             mPoseView.setText("LOCKED");
+            speakOut("Myo connected to the phone. Perform the sync gesture.");
         }
 
         @Override
@@ -504,11 +505,14 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onArmSync(Myo myo, long timestamp, Arm arm, XDirection xDirection) {
             mArmView.setText(arm == Arm.LEFT ? R.string.myo_arm_left : R.string.myo_arm_right);
+            String myoArm = (arm == Arm.LEFT ? "left arm" : "right arm");
+            speakOut("Myo synced to the " + myoArm);
         }
 
         @Override
         public void onArmUnsync(Myo myo, long timestamp) {
             mArmView.setText(R.string.myo_arm_unknown);
+            speakOut("Myo is not synced properly");
         }
 
 
