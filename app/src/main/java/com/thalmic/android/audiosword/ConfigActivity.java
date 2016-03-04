@@ -125,10 +125,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public static Boolean callConfirmation = Boolean.FALSE;
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
-    public static String swooshEarcon;
-    public static String selectEarcon;
-    public static String unlockEarcon;
-    public static String lockEarcon;
+    public EarconManager earconManager;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -203,14 +200,8 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
-        swooshEarcon = getString(R.string.swoosh_earcon);
-        lockEarcon = getString(R.string.lock_earcon);
-        unlockEarcon = getString(R.string.unlock_earcon);
-        selectEarcon = getString(R.string.select_earcon);
-        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh);
-        tts.addEarcon(lockEarcon, getApplicationContext().getPackageName(), R.raw.lock);
-        tts.addEarcon(unlockEarcon, getApplicationContext().getPackageName(), R.raw.unlock);
-        tts.addEarcon(selectEarcon, getApplicationContext().getPackageName(), R.raw.select);
+        earconManager = new EarconManager();
+        earconManager.setupEarcons(tts, getApplicationContext().getPackageName());
 
         // Updating values from save instances
         updateValuesFromBundle(savedInstanceState);
@@ -529,7 +520,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 }
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
-                        ConfigActivity.tts.playEarcon(ConfigActivity.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                        ConfigActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                         Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
                         startActivity(intent);
                         Activity activity = ConfigActivity.this;

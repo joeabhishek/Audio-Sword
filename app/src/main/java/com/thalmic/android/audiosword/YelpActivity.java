@@ -145,10 +145,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     public static Boolean callConfirmation = Boolean.FALSE;
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
-    public static String swooshEarcon;
-    public static String selectEarcon;
-    public static String unlockEarcon;
-    public static String lockEarcon;
+    public EarconManager earconManager;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -223,9 +220,8 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
-        swooshEarcon = getString(R.string.swoosh_earcon);
-        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh);
-        tts.addEarcon(getString(R.string.lock_earcon), getApplicationContext().getPackageName(), R.raw.lock);
+        earconManager = new EarconManager();
+        earconManager.setupEarcons(tts, getApplicationContext().getPackageName());
 
         // Updating values from save instances
         updateValuesFromBundle(savedInstanceState);
@@ -238,15 +234,6 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             speak = sharedpreferences.getBoolean(SpeakBoolean, false);
 
         }
-        tts = new TextToSpeech(this, this);
-        swooshEarcon = getString(R.string.swoosh_earcon);
-        lockEarcon = getString(R.string.lock_earcon);
-        unlockEarcon = getString(R.string.unlock_earcon);
-        selectEarcon = getString(R.string.select_earcon);
-        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh);
-        tts.addEarcon(lockEarcon, getApplicationContext().getPackageName(), R.raw.lock);
-        tts.addEarcon(unlockEarcon, getApplicationContext().getPackageName(), R.raw.unlock);
-        tts.addEarcon(selectEarcon, getApplicationContext().getPackageName(), R.raw.select);
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -552,7 +539,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 }
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
-                        YelpActivity.tts.playEarcon(YelpActivity.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                        YelpActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                         Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
                         startActivity(intent);
                         Activity activity = YelpActivity.this;
@@ -567,7 +554,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
-                YelpActivity.tts.playEarcon(YelpActivity.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                YelpActivity.tts.playEarcon(EarconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0){
                         directionIndicator = 1;
@@ -598,7 +585,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
             } else if(pose == pose.WAVE_IN) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
-                YelpActivity.tts.playEarcon(YelpActivity.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                YelpActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0) {
                         directionIndicator = 2;

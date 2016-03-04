@@ -124,10 +124,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     public static Boolean callConfirmation = Boolean.FALSE;
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
-    public static String swooshEarcon;
-    public static String selectEarcon;
-    public static String unlockEarcon;
-    public static String lockEarcon;
+    public EarconManager earconManager;
 
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
@@ -203,15 +200,8 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
-        tts = new TextToSpeech(this, this);
-        swooshEarcon = getString(R.string.swoosh_earcon);
-        lockEarcon = getString(R.string.lock_earcon);
-        unlockEarcon = getString(R.string.unlock_earcon);
-        selectEarcon = getString(R.string.select_earcon);
-        tts.addEarcon(swooshEarcon, getApplicationContext().getPackageName(), R.raw.swoosh);
-        tts.addEarcon(lockEarcon, getApplicationContext().getPackageName(), R.raw.lock);
-        tts.addEarcon(unlockEarcon, getApplicationContext().getPackageName(), R.raw.unlock);
-        tts.addEarcon(selectEarcon, getApplicationContext().getPackageName(), R.raw.select);
+        earconManager = new EarconManager();
+        earconManager.setupEarcons(tts, getApplicationContext().getPackageName());
 
         // Updating values from save instances
         updateValuesFromBundle(savedInstanceState);
@@ -536,7 +526,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                     if(lockConfirmation == Boolean.TRUE) {
                         Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
                         tts.speak("locking", TextToSpeech.QUEUE_ADD, null);
-                        tts.playEarcon(getString(R.string.lock_earcon), TextToSpeech.QUEUE_ADD, null);
+                        tts.playEarcon(earconManager.lockEarcon, TextToSpeech.QUEUE_ADD, null);
                         myo.lock();
                     } else {
                         speakOut("You are back to the start");
@@ -548,7 +538,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
-                DrawerActivity.tts.playEarcon(DrawerActivity.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                DrawerActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0){
                         directionIndicator = 1;
@@ -566,7 +556,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 }
             } else if(pose == pose.WAVE_IN) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
-                DrawerActivity.tts.playEarcon(DrawerActivity.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                DrawerActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0) {
                         directionIndicator = 2;
@@ -582,7 +572,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                     }
                 }
             } else if(pose == pose.DOUBLE_TAP) {
-                DrawerActivity.tts.playEarcon(DrawerActivity.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                DrawerActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("yelp")) {
