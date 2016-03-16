@@ -289,7 +289,6 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                speakOut("Yelp  ");
                 help();
             }
         }, 1000);

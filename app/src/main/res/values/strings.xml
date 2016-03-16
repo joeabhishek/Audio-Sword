@@ -45,4 +45,5 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_drawer">DrawerActivity</string>
+    <string name="title_activity_training">TrainingActivity</string>
 </resources>

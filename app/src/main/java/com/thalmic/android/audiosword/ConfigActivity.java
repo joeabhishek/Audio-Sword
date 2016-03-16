@@ -271,11 +271,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                speakOut("Dialer  ");
                 help();
             }
-        }, 2000);
-        //speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
+        }, 1000);
     }
 
     @Override

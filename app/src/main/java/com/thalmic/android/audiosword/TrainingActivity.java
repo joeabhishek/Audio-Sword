@@ -31,11 +31,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.glass.companion.Proto;
 import com.thalmic.myo.AbstractDeviceListener;
 import com.thalmic.myo.Arm;
@@ -48,17 +45,12 @@ import com.thalmic.myo.scanner.ScanActivity;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
-public class DrawerActivity extends Activity implements GlassDevice.GlassConnectionListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener,
+public class TrainingActivity extends Activity implements GlassDevice.GlassConnectionListener,
         TextToSpeech.OnInitListener {
-    private static final String TAG = "ConfigActivity";
+    private static final String TAG = "TrainingActivity";
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final String REQUESTING_LOCATION_UPDATES_KEY = "REQUESTING_LOCATION_UPDATES_KEY";
@@ -103,29 +95,10 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     public static boolean speak = false;
     Handler handler = new Handler();
 
-    /* Yelp App */
-    public static String[] primaryMenu = {"Yelp", "Facebook", "Uber"};
-    public static String[] secondaryMenu = {"Phone", "Training", "Books"};
-    public static String[] dummy = {"a", "b"};
-    public static String[][] menus = { dummy, primaryMenu, secondaryMenu};
-    public static int directionIndicator = 0;
-    public static int menuCursorPosition = 0;
-    public static String currentMenuName = "todo";
-    public static String currentRestOption = "todo";
-    public static String currentRestaurant = "todo";
-    public static int navLevel = 1;
-    public static String currentContact = "noOne";
-    public static int secondNavSelection = 0;
-    public static int thirdNavSelection = 0;
-    public static String helpMenuName = "noName";
-    public static String helpRestName = "noName";
-    public static String helpRestOption = "noName";
-    public static Boolean freeFlow = Boolean.TRUE;
-    public static Boolean callConfirmation = Boolean.FALSE;
+    /* Phone menu items */
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
     public EarconManager earconManager;
-
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -156,7 +129,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             }
 
             mGlass = mService.getMyoRemote().getGlassDevice();
-            mGlass.registerListener(DrawerActivity.this);
+            mGlass.registerListener(TrainingActivity.this);
             updateGlassStatus(mGlass.getConnectionStatus());
 
             String glassAddress = mPrefs.getGlassAddress();
@@ -175,7 +148,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_config);
+        setContentView(R.layout.activity_training);
         mMyoStatusView = (TextView) findViewById(R.id.myo_status);
         mGlassStatusView = (TextView) findViewById(R.id.glass_status);
         mScreencastView = (ImageView) findViewById(R.id.screenshot);
@@ -190,13 +163,11 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         Intent intent = new Intent(this, MyoRemoteService.class);
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
-        freeFlowIntent = new Intent(this, YelpFreeFlowService.class);
+        freeFlowIntent = new Intent(this, FreeFlowService.class);
 
         registerReceiver(mStopReceiver, new IntentFilter(MyoRemoteService.ACTION_STOP_MYO_GLASS));
 
         mResultReceiver = new AddressResultReceiver(new Handler());
-        //buildGoogleApiClient();
-        //mGoogleApiClient.connect();
 
         //Text to speech initialization
         tts = new TextToSpeech(this, this);
@@ -212,17 +183,10 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
 
         if (sharedpreferences.contains(SpeakBoolean)) {
             speak = sharedpreferences.getBoolean(SpeakBoolean, false);
+
         }
 
-    }
 
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        createLocationRequest();
     }
 
     @Override
@@ -232,23 +196,19 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         Hub.getInstance().removeListener(mListener);
         unregisterReceiver(mStopReceiver);
         unbindService(mServiceConnection);
-        //mGlass.unregisterListener(this);
+        mGlass.unregisterListener(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        //stopLocationUpdates();
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
-        //mGlass.stopScreenshot();
-//        if (mGoogleApiClient.isConnected()) {
-//            mGoogleApiClient.disconnect();
-//        }
+        mGlass.stopScreenshot();
     }
 
     @Override
@@ -259,20 +219,14 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-//        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
-//            startLocationUpdates();
-//        }
 
         /* Resetting variables for phone application */
-        directionIndicator = 0;
-        menuCursorPosition = 0;
-        navLevel = 1;
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                help();
-            }
-        }, 1000);
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                speakOut("Training  ");
+//            }
+//        }, 2000);
     }
 
     @Override
@@ -332,35 +286,16 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         speakOut("Location Updates Stopped");
     }
 
-    public void openDialerApplication(View view) {
-        Intent intent = new Intent(this, ConfigActivity.class);
+    public void openYelpApplication(View view) {
+        Intent intent = new Intent(this, YelpActivity.class);
         startActivity(intent);
         finish();
     }
 
-    public void openYelpApplication(View view) {
-//        Intent intent = new Intent(this, YelpActivity.class);
-//        startActivity(intent);
-//        finish();
-        showToast("Already in Yelp");
-    }
-
-    public void onGetLocation(View view) {
-        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        if (mCurrentLocation != null) {
-            mLatitudeText = (String.valueOf(mLastLocation.getLatitude()));
-            mLongitudeText = (String.valueOf(mLastLocation.getLongitude()));
-
-        }
-        //startLocationUpdates();
-    }
-
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    public void openDialerApplication(View view) {
+        Intent intent = new Intent(this, ConfigActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void setScreencastEnabled(boolean enable) {
@@ -428,15 +363,8 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     @Override
     protected void onStart() {
         super.onStart();
-
-        //mGoogleApiClient.connect();
     }
 
-
-    public void onConnected(Bundle connectionHint) {
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-    }
 
     /**
      * Creates an intent, adds location data to it as an extra, and starts the intent service for
@@ -444,7 +372,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
      */
     protected void startIntentService() {
         // Create an intent for passing to the intent service responsible for fetching the address.
-        Intent intent = new Intent(DrawerActivity.this, FetchAddressIntentService.class);
+        Intent intent = new Intent(TrainingActivity.this, FetchAddressIntentService.class);
 
         // Pass the result receiver as an extra to the service.
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
@@ -456,16 +384,6 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         // (creating a process for it if needed); if it is running then it remains running. The
         // service kills itself automatically once all intents are processed.
         startService(intent);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        return;
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        return;
     }
 
     private class StopReceiver extends BroadcastReceiver {
@@ -481,7 +399,6 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             mPrefs.setMyoAddress(myo.getMacAddress());
             mMyoStatusView.setText(R.string.connected);
             mPoseView.setText("LOCKED");
-            speakOut("Myo connected to the phone. Perform the sync gesture.");
         }
 
         @Override
@@ -494,14 +411,11 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onArmSync(Myo myo, long timestamp, Arm arm, XDirection xDirection) {
             mArmView.setText(arm == Arm.LEFT ? R.string.myo_arm_left : R.string.myo_arm_right);
-            String myoArm = (arm == Arm.LEFT ? "left arm" : "right arm");
-            speakOut("Myo synced to the " + myoArm);
         }
 
         @Override
         public void onArmUnsync(Myo myo, long timestamp) {
             mArmView.setText(R.string.myo_arm_unknown);
-            speakOut("Myo is not synced properly");
         }
 
 
@@ -509,117 +423,31 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         public void onPose(Myo myo, long timestamp, final Pose pose) {
             mPoseView.setText(pose.name());
             if (pose == pose.FIST) {
-                //startLocationUpdates();
-                //speakOut("Wave right for favourites");
-                help();
+                lockConfirmation = Boolean.FALSE;
+                speakOut("Fist");
             } else if (pose == pose.FINGERS_SPREAD) {
-                stopFreeFlow();
-                menuCursorPosition = 0;
-                directionIndicator = 0;
-                if (navLevel > 1) {
-                    navLevel--;
-                    help();
-                    lockConfirmation = Boolean.FALSE;
+                if(lockConfirmation == Boolean.TRUE) {
+                    TrainingActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                    speakOut("Exiting Training");
+                    Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
+                    startActivity(intent);
+                    Activity activity = TrainingActivity.this;
+                    activity.finish();
+                } else {
+                    speakOut("Finger Spread");
+                    lockConfirmation = Boolean.TRUE;
                 }
-                if(navLevel == 1){
-                    if(lockConfirmation == Boolean.TRUE) {
-                        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                        tts.speak("locking", TextToSpeech.QUEUE_ADD, null);
-                        tts.playEarcon(earconManager.lockEarcon, TextToSpeech.QUEUE_ADD, null);
-                        myo.lock();
-                    } else {
-                        speakOut("You are back to the start");
-                        lockConfirmation = Boolean.TRUE;
-                    }
-                }
-                callConfirmation = Boolean.FALSE;
-                //stopLocationUpdates();
-                //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
-                Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
-                DrawerActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
-                if(navLevel == 1) {
-                    if(directionIndicator == 0){
-                        directionIndicator = 1;
-                    }
-                    if(directionIndicator == 1) {
-                        incrementMenuCursorPosition(menus[directionIndicator]);
-                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
-                    } else {
-                        decrementMenuCursorPosition(menus[directionIndicator]);
-                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
-                    }
+                lockConfirmation = Boolean.FALSE;
+                speakOut("Wave Right");
 
-                }
             } else if(pose == pose.WAVE_IN) {
-                Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
-                DrawerActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
-                if(navLevel == 1) {
-                    if(directionIndicator == 0) {
-                        directionIndicator = 2;
-                    }
-                    if(directionIndicator == 1){
-                        decrementMenuCursorPosition(menus[directionIndicator]);
-                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
-                    } else if (directionIndicator == 2) {
-                        incrementMenuCursorPosition(menus[directionIndicator]);
-                        currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
-                    }
-                }
+                lockConfirmation = Boolean.FALSE;
+                speakOut("Wave Left");
+
             } else if(pose == pose.DOUBLE_TAP) {
-                DrawerActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
-                if(navLevel == 1) {
-                    final String s = currentMenuName.toLowerCase();
-                    if (s.equals("yelp")) {
-                        speakOut(s);
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                Intent intent = new Intent(getApplicationContext(), YelpActivity.class);
-                                startActivity(intent);
-                                Activity activity = DrawerActivity.this;
-                                activity.finish();
-                            }
-                        }, 1000);
-
-                    } else if (s.equals("facebook")) {
-                        speakOut(s);
-                    } else if (s.equals("uber")) {
-                        speakOut(s);
-                    } else if (s.equals("phone")) {
-                        speakOut(s);
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                Intent intent = new Intent(getApplicationContext(), ConfigActivity.class);
-                                startActivity(intent);
-                                Activity activity = DrawerActivity.this;
-                                activity.finish();
-                            }
-                        }, 1000);
-                    } else if (s.equals("calendar")) {
-                        speakOut(s);
-                    } else if (s.equals("books")) {
-                        speakOut(s);
-                    } else if (s.equals("training")) {
-                        speakOut(s);
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                Intent intent = new Intent(getApplicationContext(), TrainingActivity.class);
-                                startActivity(intent);
-                                Activity activity = DrawerActivity.this;
-                                activity.finish();
-                            }
-                        }, 1000);
-                    }else {
-
-                    }
-                }
+                lockConfirmation = Boolean.FALSE;
+                speakOut("Double Tap");
             }
         }
 
@@ -633,78 +461,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onUnlock(Myo myo, long timestamp) {
             mPoseView.setText("UNLOCKED");
-
         }
-    }
-
-    public void help(){
-        if(navLevel == 1){
-            speakOut("App Drawer. Wave right for Yelp, Facebook and Uber. Wave left for Phone, Calendar and Books.");
-        } else if(navLevel == 2) {
-            speakOut("Wave right to browse " + helpMenuName);
-        } else if(navLevel == 3) {
-            speakOut("Wave Right to browse options for" + helpRestName);
-        }
-    }
-
-    public void openActivityWithDelay(final Class<Activity> activityToOpen){
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(getApplicationContext(), activityToOpen.getClass());
-                startActivity(intent);
-                Activity activity = DrawerActivity.this;
-                activity.finish();
-            }
-        }, 1000);
-    }
-
-
-    public static void incrementMenuCursorPosition(String[] array) {
-        if(freeFlow == Boolean.FALSE) {
-            callConfirmation = Boolean.TRUE;
-        } else {
-            callConfirmation = Boolean.FALSE;
-        }
-
-        if (menuCursorPosition < (array.length)) {
-            menuCursorPosition++;
-        } else {
-            menuCursorPosition = 1;
-        }
-    }
-
-    public static void decrementMenuCursorPosition(String[] array) {
-        if(freeFlow == Boolean.FALSE) {
-            callConfirmation = Boolean.TRUE;
-        } else {
-            callConfirmation = Boolean.FALSE;
-        }
-
-        if (menuCursorPosition > 1) {
-            menuCursorPosition--;
-        } else {
-            menuCursorPosition = array.length;
-        }
-    }
-
-
-    public void startFreeFlow(String[] array) {
-        freeFlow = Boolean.TRUE;
-        startService(freeFlowIntent);
-    }
-
-    public void stopFreeFlow() {
-        freeFlow = Boolean.FALSE;
-        tts.stop();
-        stopService(freeFlowIntent);
-    }
-
-    public void callContact(){
-        tts.stop();
-        Uri number = Uri.parse("tel:3176409616");
-        Intent callIntent = new Intent(Intent.ACTION_CALL, number);
-        startActivity(callIntent);
     }
 
     @Override
@@ -804,31 +561,8 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        startIntentService();
-        updateUI();
-    }
 
-    private void updateUI() {
-        //mLatitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
-        //mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
-        //mLastUpdateTimeTextView.setText(mLastUpdateTime);
-    }
 
-    protected void startLocationUpdates() {
-        mRequestingLocationUpdates = true;
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
-    }
-
-    protected void stopLocationUpdates() {
-        mRequestingLocationUpdates = false;
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
-    }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
@@ -869,7 +603,6 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 speak = savedInstanceState.getBoolean(
                         SPEAK_BOOLEAN);
             }
-            updateUI();
         }
     }
 }
