@@ -272,7 +272,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             public void run() {
                 help();
             }
-        }, 1000);
+        }, 500);
     }
 
     @Override
@@ -524,7 +524,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
                         Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
-                        tts.speak("locking", TextToSpeech.QUEUE_ADD, null);
+                        tts.speak("locking", TextToSpeech.QUEUE_FLUSH, null);
                         tts.playEarcon(earconManager.lockEarcon, TextToSpeech.QUEUE_ADD, null);
                         myo.lock();
                     } else {
@@ -545,11 +545,11 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                     if(directionIndicator == 1) {
                         incrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     } else {
                         decrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     }
 
                 }
@@ -563,19 +563,19 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                     if(directionIndicator == 1){
                         decrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     } else if (directionIndicator == 2) {
                         incrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     }
                 }
             } else if(pose == pose.DOUBLE_TAP) {
-                DrawerActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("yelp")) {
-                        speakOut(s);
+                        DrawerActivity.tts.playEarcon(EarconManager.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                        addSpeechtoQueue(s);
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -587,11 +587,14 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                         }, 1000);
 
                     } else if (s.equals("facebook")) {
-                        speakOut(s);
+                        DrawerActivity.tts.playEarcon(EarconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
+                        addSpeechtoQueue(s);
                     } else if (s.equals("uber")) {
-                        speakOut(s);
+                        DrawerActivity.tts.playEarcon(EarconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
+                        addSpeechtoQueue(s);
                     } else if (s.equals("phone")) {
-                        speakOut(s);
+                        DrawerActivity.tts.playEarcon(EarconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
+                        addSpeechtoQueue(s);
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -602,11 +605,14 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                             }
                         }, 1000);
                     } else if (s.equals("calendar")) {
-                        speakOut(s);
+                        DrawerActivity.tts.playEarcon(EarconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
+                        addSpeechtoQueue(s);
                     } else if (s.equals("books")) {
-                        speakOut(s);
+                        DrawerActivity.tts.playEarcon(EarconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
+                        addSpeechtoQueue(s);
                     } else if (s.equals("training")) {
-                        speakOut(s);
+                        DrawerActivity.tts.playEarcon(EarconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
+                        addSpeechtoQueue(s);
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {

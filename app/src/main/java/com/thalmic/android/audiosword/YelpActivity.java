@@ -561,11 +561,11 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                     if(directionIndicator == 1) {
                         incrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     } else {
                         decrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     }
 
                 } else if(navLevel == 2){
@@ -573,13 +573,13 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                     incrementMenuCursorPosition(optionLists[secondNavSelection]);
                     currentContact = optionLists[secondNavSelection][menuCursorPosition-1];
                     //helpMenuName = currentContact;
-                    speakOut(currentContact);
+                    addSpeechtoQueue(currentContact);
                 } else if(navLevel == 3){
                     stopFreeFlow();
                     incrementMenuCursorPosition(restOptions);
                     currentRestOption = restOptions[menuCursorPosition-1];
                     helpRestOption = currentRestOption;
-                    speakOut(currentRestOption);
+                    addSpeechtoQueue(currentRestOption);
                 }
 
             } else if(pose == pose.WAVE_IN) {
@@ -592,63 +592,64 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                     if(directionIndicator == 1){
                         decrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     } else if (directionIndicator == 2) {
                         incrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     }
                 } else if(navLevel == 2) {
                     stopFreeFlow();
                     decrementMenuCursorPosition(optionLists[secondNavSelection]);
                     currentContact = optionLists[secondNavSelection][menuCursorPosition-1];
                     //helpMenuName = currentContact;
-                    speakOut(currentContact);
+                    addSpeechtoQueue(currentContact);
                 } else if(navLevel == 3) {
                     stopFreeFlow();
                     decrementMenuCursorPosition(restOptions);
                     currentRestOption = restOptions[menuCursorPosition-1];
                     helpRestOption = currentRestOption;
-                    speakOut(currentRestOption);
+                    addSpeechtoQueue(helpRestOption);
                 }
 
             } else if(pose == pose.DOUBLE_TAP) {
+                YelpActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("favourites")) {
                         secondNavSelection = 1;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("restaurants")) {
                         secondNavSelection = 2;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("coffee shops")) {
                         secondNavSelection = 3;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("bars")) {
                         secondNavSelection = 4;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("delivery")) {
                         secondNavSelection = 5;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("reservations")) {
                         secondNavSelection = 6;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("more")) {
                         secondNavSelection = 7;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else {
                         callFunctionWithDelay(1000, s);
                     }
                 } else if(navLevel == 2) {
                     stopFreeFlow();
-                    speakOut(currentContact);
+                    addSpeechtoQueue(currentContact);
                     final String s = currentContact;
                     if(callConfirmation) {
                         handler.postDelayed(new Runnable() {
@@ -663,16 +664,15 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 } else if(navLevel == 3) {
                     currentRestOption = restOptions[menuCursorPosition-1];
                     final String s = currentRestOption.toLowerCase();
-                    speakOut(currentRestOption);
                     if (s.equals("navigate")) {
                         secondNavSelection = 1;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         helpRestOption = s;
                         if(callConfirmation) {
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    speakOut("In 100 feet take a right");
+                                    addSpeechtoQueue("In 100 feet take a right");
                                     //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
                                 }
                             }, 1000);
@@ -682,13 +682,14 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
                     } else if (s.equals("call")) {
                         secondNavSelection = 2;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         helpRestOption = s;
                         if(callConfirmation) {
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    callContact();
+                                    //callContact();
+                                    addSpeechtoQueue("calling restaurant");
                                     //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
                                 }
                             }, 1000);
@@ -698,13 +699,13 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
                     } else if (s.equals("bookmark")) {
                         secondNavSelection = 3;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         helpRestOption = s;
                         if(callConfirmation) {
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    speakOut("Added to favourites");
+                                    addSpeechtoQueue("Added to favourites");
                                     //Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
                                 }
                             }, 1000);
@@ -818,7 +819,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
     public void stopFreeFlow() {
         freeFlow = Boolean.FALSE;
-        tts.stop();
+        //tts.stop();
         stopService(freeFlowIntent);
     }
 
