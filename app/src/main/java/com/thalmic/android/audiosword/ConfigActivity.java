@@ -533,6 +533,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+                ConfigActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0){
                         directionIndicator = 1;
@@ -540,22 +541,23 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     if(directionIndicator == 1) {
                         incrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     } else {
                         decrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     }
 
                 } else if(navLevel == 2){
                     stopFreeFlow();
                     incrementMenuCursorPosition(callLists[secondNavSelection]);
                     currentContact = callLists[secondNavSelection][menuCursorPosition-1];
-                    speakOut(currentContact);
+                    addSpeechtoQueue(currentContact);
                 }
 
             } else if(pose == pose.WAVE_IN) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+                ConfigActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     if(directionIndicator == 0) {
                         directionIndicator = 2;
@@ -563,49 +565,50 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     if(directionIndicator == 1){
                         decrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     } else if (directionIndicator == 2) {
                         incrementMenuCursorPosition(menus[directionIndicator]);
                         currentMenuName = menus[directionIndicator][menuCursorPosition-1];
-                        speakOut(currentMenuName);
+                        addSpeechtoQueue(currentMenuName);
                     }
 
                 } else if(navLevel == 2) {
                     stopFreeFlow();
                     decrementMenuCursorPosition(callLists[secondNavSelection]);
                     currentContact = callLists[secondNavSelection][menuCursorPosition-1];
-                    speakOut(currentContact);
+                    addSpeechtoQueue(currentContact);
                 }
 
             } else if(pose == pose.DOUBLE_TAP) {
+                ConfigActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("favourites")) {
                         secondNavSelection = 1;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("missed")) {
                         secondNavSelection = 3;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("dialed")) {
                         secondNavSelection = 4;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("received")) {
                         secondNavSelection = 5;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("emergency")) {
                         secondNavSelection = 2;
-                        speakOut(s);
+                        addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else {
                         secondNavLevelAction(s);
                     }
                 } else if(navLevel == 2) {
                     stopFreeFlow();
-                    speakOut(currentContact);
+                    addSpeechtoQueue(currentContact);
                     if(callConfirmation) {
                         handler.postDelayed(new Runnable() {
                             @Override
@@ -695,7 +698,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
     public void stopFreeFlow() {
         freeFlow = Boolean.FALSE;
-        tts.stop();
+        //tts.stop();
         stopService(freeFlowIntent);
     }
 
