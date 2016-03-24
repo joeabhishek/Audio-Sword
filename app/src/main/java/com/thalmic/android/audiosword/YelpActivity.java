@@ -353,7 +353,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     }
 
     public void openDialerApplication(View view) {
-        Intent intent = new Intent(this, ConfigActivity.class);
+        Intent intent = new Intent(this, TrainingActivity.class);
         startActivity(intent);
         finish();
     }

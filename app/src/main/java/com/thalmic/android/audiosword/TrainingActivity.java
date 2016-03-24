@@ -287,9 +287,10 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
     }
 
     public void openYelpApplication(View view) {
-        Intent intent = new Intent(this, YelpActivity.class);
-        startActivity(intent);
-        finish();
+//        Intent intent = new Intent(this, YelpActivity.class);
+//        startActivity(intent);
+//        finish();
+          showToast("Already in training");
     }
 
     public void openDialerApplication(View view) {
@@ -421,6 +422,7 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
 
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
+            Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
             mPoseView.setText(pose.name());
             if (pose == pose.FIST) {
                 lockConfirmation = Boolean.FALSE;

@@ -340,10 +340,10 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     public void openDialerApplication(View view) {
-//        Intent intent = new Intent(this, ConfigActivity.class);
-//        startActivity(intent);
-//        finish();
-        showToast("Already in Dialer");
+        Intent intent = new Intent(this, TrainingActivity.class);
+        startActivity(intent);
+        finish();
+
     }
 
     public void onGetLocation(View view) {
