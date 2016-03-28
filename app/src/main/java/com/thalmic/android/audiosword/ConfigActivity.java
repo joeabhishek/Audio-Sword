@@ -334,7 +334,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     public void openYelpApplication(View view) {
-        Intent intent = new Intent(this, YelpActivity.class);
+        Intent intent = new Intent(this, DrawerActivity.class);
         startActivity(intent);
         finish();
     }
@@ -343,7 +343,6 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         Intent intent = new Intent(this, TrainingActivity.class);
         startActivity(intent);
         finish();
-
     }
 
     public void onGetLocation(View view) {

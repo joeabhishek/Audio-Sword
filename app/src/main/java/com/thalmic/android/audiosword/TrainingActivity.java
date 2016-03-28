@@ -287,16 +287,16 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
     }
 
     public void openYelpApplication(View view) {
-//        Intent intent = new Intent(this, YelpActivity.class);
-//        startActivity(intent);
-//        finish();
-          showToast("Already in training");
+        Intent intent = new Intent(this, DrawerActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     public void openDialerApplication(View view) {
-        Intent intent = new Intent(this, ConfigActivity.class);
-        startActivity(intent);
-        finish();
+//        Intent intent = new Intent(this, TrainingActivity.class);
+//        startActivity(intent);
+//        finish();
+        showToast("Already in Training App");
     }
 
     private void setScreencastEnabled(boolean enable) {

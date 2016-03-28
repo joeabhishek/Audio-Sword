@@ -342,7 +342,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
 //        Intent intent = new Intent(this, YelpActivity.class);
 //        startActivity(intent);
 //        finish();
-        showToast("Already in Yelp");
+        showToast("Already in Dialer");
     }
 
     public void onGetLocation(View view) {
@@ -495,7 +495,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         public void onArmSync(Myo myo, long timestamp, Arm arm, XDirection xDirection) {
             mArmView.setText(arm == Arm.LEFT ? R.string.myo_arm_left : R.string.myo_arm_right);
             String myoArm = (arm == Arm.LEFT ? "left arm" : "right arm");
-            speakOut("Myo synced to the " + myoArm);
+            addSpeechtoQueue("Myo synced to the " + myoArm);
         }
 
         @Override

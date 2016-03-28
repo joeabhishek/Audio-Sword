@@ -359,10 +359,9 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     }
 
     public void openYelpApplication(View view) {
-//        Intent intent = new Intent(this, YelpActivity.class);
-//        startActivity(intent);
-//        finish();
-        showToast("Already in Yelp");
+        Intent intent = new Intent(this, DrawerActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     public void onGetLocation(View view) {
