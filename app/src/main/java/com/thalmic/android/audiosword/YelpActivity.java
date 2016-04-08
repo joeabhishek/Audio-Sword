@@ -525,11 +525,13 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             if (pose == pose.FIST) {
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
+                YelpActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 help();
             } else if (pose == pose.FINGERS_SPREAD) {
                 stopFreeFlow();
                 menuCursorPosition = 0;
                 directionIndicator = 0;
+                YelpActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if (navLevel > 1) {
                     navLevel--;
                     help();
@@ -543,7 +545,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                         Activity activity = YelpActivity.this;
                         activity.finish();
                     } else {
-                        speakOut("You are back to the start. Repeat the same action to go to app drawer.");
+                        addSpeechtoQueue("You are back to the start. Repeat the same action to go to app drawer.");
                         lockConfirmation = Boolean.TRUE;
                     }
                 }
@@ -742,13 +744,14 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
     public void help(){
         if(navLevel == 1){
-            speakOut("Wave right for Restaurants, Coffee shops and Bars. Wave left for Delivery Reservations and More.");
+            addSpeechtoQueue("Wave right for Restaurants, Coffee shops and Bars. Wave left for Delivery Reservations and More.");
         } else if(navLevel == 2) {
-            speakOut("Wave right to browse " + helpMenuName);
+            addSpeechtoQueue("Wave right to browse " + helpMenuName);
         } else if(navLevel == 3) {
-            speakOut("Wave Right to browse options for" + helpRestName);
+            addSpeechtoQueue("Wave Right to browse options for" + helpRestName);
         }
     }
+
 
     public static void incrementMenuCursorPosition(String[] array) {
         if(freeFlow == Boolean.FALSE) {

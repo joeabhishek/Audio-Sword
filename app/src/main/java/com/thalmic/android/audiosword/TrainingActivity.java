@@ -426,7 +426,8 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
             mPoseView.setText(pose.name());
             if (pose == pose.FIST) {
                 lockConfirmation = Boolean.FALSE;
-                speakOut("Fist");
+                TrainingActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                addSpeechtoQueue("Fist");
             } else if (pose == pose.FINGERS_SPREAD) {
                 if(lockConfirmation == Boolean.TRUE) {
                     TrainingActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
@@ -436,20 +437,24 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
                     Activity activity = TrainingActivity.this;
                     activity.finish();
                 } else {
-                    speakOut("Finger Spread");
+                    TrainingActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                    addSpeechtoQueue("Finger Spread");
                     lockConfirmation = Boolean.TRUE;
                 }
             } else if (pose == pose.WAVE_OUT) {
                 lockConfirmation = Boolean.FALSE;
-                speakOut("Wave Right");
+                TrainingActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                addSpeechtoQueue("Wave Right");
 
             } else if(pose == pose.WAVE_IN) {
                 lockConfirmation = Boolean.FALSE;
-                speakOut("Wave Left");
+                TrainingActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                addSpeechtoQueue("Wave Left");
 
             } else if(pose == pose.DOUBLE_TAP) {
                 lockConfirmation = Boolean.FALSE;
-                speakOut("Double Tap");
+                TrainingActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                addSpeechtoQueue("Double Tap");
             }
         }
 

@@ -8,9 +8,11 @@ import android.speech.tts.TextToSpeech;
 public class EarconManager {
 
     public static String swooshEarcon = String.valueOf(R.string.swoosh_earcon);
-    public static String lockEarcon = String.valueOf(R.string.lock_earcon);;
-    public static String unlockEarcon = String.valueOf(R.string.unlock_earcon);;
-    public static String selectEarcon = String.valueOf(R.string.select_earcon);;
+    public static String lockEarcon = String.valueOf(R.string.lock_earcon);
+    public static String unlockEarcon = String.valueOf(R.string.unlock_earcon);
+    public static String selectEarcon = String.valueOf(R.string.select_earcon);
+    public static String helpEarcon = String.valueOf(R.string.help_earcon);
+
 
 
     public static void setupEarcons(TextToSpeech tts, String packageName) {
@@ -18,6 +20,7 @@ public class EarconManager {
         tts.addEarcon(lockEarcon, packageName, R.raw.lock);
         tts.addEarcon(unlockEarcon, packageName, R.raw.unlock);
         tts.addEarcon(selectEarcon, packageName, R.raw.select);
+        tts.addEarcon(helpEarcon, packageName, R.raw.help);
     }
 
 }

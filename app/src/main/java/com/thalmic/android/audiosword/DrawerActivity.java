@@ -511,12 +511,14 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             if (pose == pose.FIST) {
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
+                DrawerActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 help();
             } else if (pose == pose.FINGERS_SPREAD) {
                 stopFreeFlow();
                 menuCursorPosition = 0;
                 directionIndicator = 0;
                 if (navLevel > 1) {
+                    DrawerActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                     navLevel--;
                     help();
                     lockConfirmation = Boolean.FALSE;
@@ -645,7 +647,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
 
     public void help(){
         if(navLevel == 1){
-            speakOut("App Drawer. Wave right for Yelp, Facebook and Uber. Wave left for Phone, Calendar and Books.");
+            addSpeechtoQueue("App Drawer. Wave right for Yelp, Facebook and Uber. Wave left for Phone, Calendar and Books.");
         } else if(navLevel == 2) {
             speakOut("Wave right to browse " + helpMenuName);
         } else if(navLevel == 3) {

@@ -506,24 +506,25 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             if (pose == pose.FIST) {
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
+                ConfigActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 help();
             } else if (pose == pose.FINGERS_SPREAD) {
                 stopFreeFlow();
                 menuCursorPosition = 0;
                 directionIndicator = 0;
+                ConfigActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if (navLevel > 1) {
                     navLevel--;
                     lockConfirmation = Boolean.FALSE;
                 }
                 if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
-                        ConfigActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                         Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
                         startActivity(intent);
                         Activity activity = ConfigActivity.this;
                         activity.finish();
                     } else {
-                        speakOut("You are back to the start");
+                        addSpeechtoQueue("You are back to the start");
                         lockConfirmation = Boolean.TRUE;
                     }
                 }
@@ -649,9 +650,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
 
     public void help(){
         if(navLevel == 1){
-            speakOut("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
+            addSpeechtoQueue("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");
         } else if(navLevel == 2) {
-            speakOut("Wave right to browse through " + menuName);
+            addSpeechtoQueue("Wave right to browse through " + menuName);
         }
     }
 
