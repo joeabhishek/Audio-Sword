@@ -353,12 +353,25 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     }
 
     public void openDialerApplication(View view) {
+        Intent intent = new Intent(this, ConfigActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    public void openTrainingApplication(View view) {
         Intent intent = new Intent(this, TrainingActivity.class);
         startActivity(intent);
         finish();
     }
 
     public void openYelpApplication(View view) {
+//        Intent intent = new Intent(this, YelpActivity.class);
+//        startActivity(intent);
+//        finish();
+        showToast("Already in Yelp");
+    }
+
+    public void openAppDrawer(View view) {
         Intent intent = new Intent(this, DrawerActivity.class);
         startActivity(intent);
         finish();

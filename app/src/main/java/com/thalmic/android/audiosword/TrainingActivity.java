@@ -286,17 +286,30 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
         speakOut("Location Updates Stopped");
     }
 
-    public void openYelpApplication(View view) {
-        Intent intent = new Intent(this, DrawerActivity.class);
+
+    public void openDialerApplication(View view) {
+        Intent intent = new Intent(this, ConfigActivity.class);
         startActivity(intent);
         finish();
     }
 
-    public void openDialerApplication(View view) {
+    public void openTrainingApplication(View view) {
 //        Intent intent = new Intent(this, TrainingActivity.class);
 //        startActivity(intent);
 //        finish();
-        showToast("Already in Training App");
+        showToast("Already in Training.");
+    }
+
+    public void openYelpApplication(View view) {
+        Intent intent = new Intent(this, YelpActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    public void openAppDrawer(View view) {
+        Intent intent = new Intent(this, DrawerActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void setScreencastEnabled(boolean enable) {
