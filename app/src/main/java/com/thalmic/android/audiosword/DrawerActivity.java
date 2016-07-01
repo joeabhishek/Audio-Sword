@@ -43,6 +43,7 @@ import com.thalmic.myo.DeviceListener;
 import com.thalmic.myo.Hub;
 import com.thalmic.myo.Myo;
 import com.thalmic.myo.Pose;
+import com.thalmic.myo.Quaternion;
 import com.thalmic.myo.XDirection;
 import com.thalmic.myo.scanner.ScanActivity;
 
@@ -125,6 +126,8 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
     public EarconManager earconManager;
+    public static float roll;
+    public static Boolean fistBoolean = false;
 
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
@@ -516,6 +519,55 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             speakOut("Myo is not synced properly");
         }
 
+        @Override
+        public void onOrientationData(Myo myo, long timestamp, Quaternion rotation) {
+            roll = (float) Math.toDegrees(Quaternion.roll(rotation));
+            float pitch = (float) Math.toDegrees(Quaternion.pitch(rotation));
+            float yaw = (float) Math.toDegrees(Quaternion.yaw(rotation));
+
+            // Adjust roll and pitch for the orientation of the Myo on the arm.
+            /*if (myo.getXDirection() == XDirection.TOWARD_WRIST) {
+                pitch *= -1;
+                yaw *= -1;
+            }
+            float perRoll = Math.round(roll)-relRoll;
+            if (perRoll<-180){
+                perRoll+=360;
+            }
+            if (perRoll>180){
+                perRoll-=360;
+            }
+
+            float perPitch = Math.round(pitch)-relPitch;
+            if (perPitch<-90){
+                perPitch += 180;
+            }
+            if (perPitch>90){
+                perPitch -= 180;
+            }
+
+
+            float perYaw = Math.round(yaw)-relYaw;
+            if (perYaw<-180){
+                perYaw += 360;
+            }
+            if (perYaw>180){
+                perYaw -= 360;
+            }*/
+
+            //Log.i("Roll", Float.toString(roll));
+            if(fistBoolean){
+                if(roll <= -30.00) {
+                    Log.i("Direction", "Clockwise");
+                    fistBoolean = false;
+                } else if (roll >= 0.00) {
+                    Log.i("Direction", "Anti-clockwise");
+                    fistBoolean = false;
+                }
+            }
+
+        }
+
 
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
@@ -524,8 +576,10 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
                 DrawerActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
-                help();
+                fistBoolean = Boolean.TRUE;
+                //help();
             } else if (pose == pose.FINGERS_SPREAD) {
+                fistBoolean = Boolean.FALSE;
                 stopFreeFlow();
                 menuCursorPosition = 0;
                 directionIndicator = 0;
@@ -550,6 +604,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 //stopLocationUpdates();
                 //speakOut("Location Updates Stopped");
             } else if (pose == pose.WAVE_OUT) {
+                fistBoolean = Boolean.FALSE;
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
                 DrawerActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
@@ -568,6 +623,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
 
                 }
             } else if(pose == pose.WAVE_IN) {
+                fistBoolean = Boolean.FALSE;
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
                 DrawerActivity.tts.playEarcon(earconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if(navLevel == 1) {
@@ -585,6 +641,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                     }
                 }
             } else if(pose == pose.DOUBLE_TAP) {
+                fistBoolean = Boolean.FALSE;
                 if(navLevel == 1) {
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("yelp")) {
