@@ -127,7 +127,11 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     public Intent freeFlowIntent;
     public EarconManager earconManager;
     public static float roll;
+    public static float startRoll;
+    public static float endRoll;
+    public static float rollDiff;
     public static Boolean fistBoolean = false;
+    public static Boolean rollStartBoolean = false;
 
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
@@ -557,10 +561,19 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
 
             //Log.i("Roll", Float.toString(roll));
             if(fistBoolean){
-                if(roll <= -30.00) {
+                if(rollStartBoolean) {
+                    startRoll = roll;
+                    rollStartBoolean = Boolean.FALSE;
+                }
+                endRoll = roll;
+                rollDiff = (startRoll - endRoll);
+
+                if(rollDiff >= 10.00) {
+                    Log.i("Roll Difference", String.valueOf(rollDiff));
                     Log.i("Direction", "Clockwise");
                     fistBoolean = false;
-                } else if (roll >= 0.00) {
+                } else if (rollDiff <= -10.00) {
+                    Log.i("Roll Difference", String.valueOf(rollDiff));
                     Log.i("Direction", "Anti-clockwise");
                     fistBoolean = false;
                 }
@@ -577,6 +590,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 //speakOut("Wave right for favourites");
                 DrawerActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 fistBoolean = Boolean.TRUE;
+                rollStartBoolean = Boolean.TRUE;
                 //help();
             } else if (pose == pose.FINGERS_SPREAD) {
                 fistBoolean = Boolean.FALSE;
