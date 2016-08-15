@@ -572,6 +572,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                     Log.i("Roll Difference", String.valueOf(rollDiff));
                     Log.i("Direction", "Clockwise");
                     fistBoolean = false;
+
                 } else if (rollDiff <= -10.00) {
                     Log.i("Roll Difference", String.valueOf(rollDiff));
                     Log.i("Direction", "Anti-clockwise");

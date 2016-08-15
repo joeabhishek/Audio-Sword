@@ -43,6 +43,7 @@ import com.thalmic.myo.DeviceListener;
 import com.thalmic.myo.Hub;
 import com.thalmic.myo.Myo;
 import com.thalmic.myo.Pose;
+import com.thalmic.myo.Quaternion;
 import com.thalmic.myo.XDirection;
 import com.thalmic.myo.scanner.ScanActivity;
 
@@ -137,6 +138,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     public static int navLevel = 1;
     public static String currentContact = "noOne";
     public static int secondNavSelection = 0;
+    public static int secondNavSelectionForFistRotate = 0;
     public static int thirdNavSelection = 0;
     public static String helpMenuName = "noName";
     public static String helpRestName = "noName";
@@ -146,6 +148,12 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
     public EarconManager earconManager;
+    public static float roll;
+    public static float startRoll;
+    public static float endRoll;
+    public static float rollDiff;
+    public static Boolean fistBoolean = false;
+    public static Boolean rollStartBoolean = false;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -531,6 +539,103 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             mArmView.setText(R.string.myo_arm_unknown);
         }
 
+        @Override
+        public void onOrientationData(Myo myo, long timestamp, Quaternion rotation) {
+            roll = (float) Math.toDegrees(Quaternion.roll(rotation));
+            float pitch = (float) Math.toDegrees(Quaternion.pitch(rotation));
+            float yaw = (float) Math.toDegrees(Quaternion.yaw(rotation));
+
+            // Adjust roll and pitch for the orientation of the Myo on the arm.
+            /*if (myo.getXDirection() == XDirection.TOWARD_WRIST) {
+                pitch *= -1;
+                yaw *= -1;
+            }
+            float perRoll = Math.round(roll)-relRoll;
+            if (perRoll<-180){
+                perRoll+=360;
+            }
+            if (perRoll>180){
+                perRoll-=360;
+            }
+
+            float perPitch = Math.round(pitch)-relPitch;
+            if (perPitch<-90){
+                perPitch += 180;
+            }
+            if (perPitch>90){
+                perPitch -= 180;
+            }
+
+
+            float perYaw = Math.round(yaw)-relYaw;
+            if (perYaw<-180){
+                perYaw += 360;
+            }
+            if (perYaw>180){
+                perYaw -= 360;
+            }*/
+
+            //Log.i("Roll", Float.toString(roll));
+            if(fistBoolean){
+
+                if(rollStartBoolean) {
+                    startRoll = roll;
+                    rollStartBoolean = Boolean.FALSE;
+                }
+                endRoll = roll;
+                rollDiff = (startRoll - endRoll);
+                menuCursorPosition = secondNavSelectionForFistRotate;
+                if(rollDiff >= 10.00) {
+                    Log.i("Roll Difference", String.valueOf(rollDiff));
+                    Log.i("Direction", "Clockwise");
+                    fistBoolean = false;
+                    navLevel = 1;
+
+                    if(navLevel == 1) {
+                        if(directionIndicator == 0){
+                            directionIndicator = 1;
+                        }
+                        if(directionIndicator == 1) {
+                            incrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            addSpeechtoQueue(currentMenuName);
+                        } else {
+                            decrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            addSpeechtoQueue(currentMenuName);
+                        }
+
+                    }
+
+                } else if (rollDiff <= -10.00) {
+                    Log.i("Roll Difference", String.valueOf(rollDiff));
+                    Log.i("Direction", "Anti-clockwise");
+                    fistBoolean = false;
+                    navLevel = 1;
+                    if(navLevel == 1) {
+                        if(directionIndicator == 0) {
+                            directionIndicator = 2;
+                        }
+                        if(directionIndicator == 1){
+                            decrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            addSpeechtoQueue(currentMenuName);
+                        } else if (directionIndicator == 2) {
+                            incrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition-1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            addSpeechtoQueue(currentMenuName);
+                        }
+                    }
+                }
+            }
+
+
+        }
+
 
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
@@ -539,7 +644,9 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
                 YelpActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
-                help();
+                //help();
+                fistBoolean = Boolean.TRUE;
+                rollStartBoolean = Boolean.TRUE;
             } else if (pose == pose.FINGERS_SPREAD) {
                 stopFreeFlow();
                 menuCursorPosition = 0;
@@ -568,6 +675,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             } else if (pose == pose.WAVE_OUT) {
                 Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
                 YelpActivity.tts.playEarcon(EarconManager.swooshEarcon, TextToSpeech.QUEUE_FLUSH, null);
+
                 if(navLevel == 1) {
                     if(directionIndicator == 0){
                         directionIndicator = 1;
@@ -632,30 +740,37 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("favourites")) {
                         secondNavSelection = 1;
+                        secondNavSelectionForFistRotate = 1;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("restaurants")) {
                         secondNavSelection = 2;
+                        secondNavSelectionForFistRotate = 2;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("coffee shops")) {
                         secondNavSelection = 3;
+                        secondNavSelectionForFistRotate = 3;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("bars")) {
                         secondNavSelection = 4;
+                        secondNavSelectionForFistRotate = 4;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("delivery")) {
                         secondNavSelection = 5;
+                        secondNavSelectionForFistRotate = 5;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("reservations")) {
                         secondNavSelection = 6;
+                        secondNavSelectionForFistRotate = 6;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("more")) {
                         secondNavSelection = 7;
+                        secondNavSelectionForFistRotate = 7;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else {
