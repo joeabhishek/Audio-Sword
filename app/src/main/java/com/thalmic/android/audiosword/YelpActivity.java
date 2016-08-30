@@ -600,11 +600,13 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
                             addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
                         } else {
                             decrementMenuCursorPosition(menus[directionIndicator]);
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
                             addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
                         }
 
                     }
@@ -623,11 +625,13 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
                             addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
                         } else if (directionIndicator == 2) {
                             incrementMenuCursorPosition(menus[directionIndicator]);
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
                             addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
                         }
                     }
                 }
@@ -847,6 +851,42 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             }
         }
 
+        public void autoSelectItem() {
+            if(navLevel == 1) {
+                final String s = currentMenuName.toLowerCase();
+                if (s.equals("favourites")) {
+                    secondNavSelection = 1;
+                    secondNavSelectionForFistRotate = 1;
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("restaurants")) {
+                    secondNavSelection = 2;
+                    secondNavSelectionForFistRotate = 2;
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("coffee shops")) {
+                    secondNavSelection = 3;
+                    secondNavSelectionForFistRotate = 3;
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("bars")) {
+                    secondNavSelection = 4;
+                    secondNavSelectionForFistRotate = 4;
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("delivery")) {
+                    secondNavSelection = 5;
+                    secondNavSelectionForFistRotate = 5;
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("reservations")) {
+                    secondNavSelection = 6;
+                    secondNavSelectionForFistRotate = 6;
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("more")) {
+                    secondNavSelection = 7;
+                    secondNavSelectionForFistRotate = 7;
+                    callFunctionWithDelay(1000, s);
+                } else {
+                    callFunctionWithDelay(1000, s);
+                }
+            }
+        }
 
 
         public void callFunctionWithDelay(int delay, final String s) {
