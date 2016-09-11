@@ -43,6 +43,7 @@ import com.thalmic.myo.DeviceListener;
 import com.thalmic.myo.Hub;
 import com.thalmic.myo.Myo;
 import com.thalmic.myo.Pose;
+import com.thalmic.myo.Quaternion;
 import com.thalmic.myo.XDirection;
 import com.thalmic.myo.scanner.ScanActivity;
 
@@ -126,6 +127,14 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public static Boolean lockConfirmation = Boolean.FALSE;
     public Intent freeFlowIntent;
     public EarconManager earconManager;
+
+    public static float roll;
+    public static float startRoll;
+    public static float endRoll;
+    public static float rollDiff;
+    public static Boolean fistBoolean = false;
+    public static Boolean rollStartBoolean = false;
+    public static int secondNavSelectionForFistRotate = 0;
 
     //public static AsyncTask freeFlowTask = new freeFlowTask();
     /**
@@ -514,6 +523,75 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             mArmView.setText(R.string.myo_arm_unknown);
         }
 
+        @Override
+        public void onOrientationData(Myo myo, long timestamp, Quaternion rotation) {
+            roll = (float) Math.toDegrees(Quaternion.roll(rotation));
+            float pitch = (float) Math.toDegrees(Quaternion.pitch(rotation));
+            float yaw = (float) Math.toDegrees(Quaternion.yaw(rotation));
+            if (fistBoolean) {
+                if (rollStartBoolean) {
+                    startRoll = roll;
+                    rollStartBoolean = Boolean.FALSE;
+                }
+                endRoll = roll;
+                rollDiff = (startRoll - endRoll);
+                menuCursorPosition = secondNavSelectionForFistRotate;
+                if (rollDiff >= 10.00) {
+                    Log.i("Roll Difference", String.valueOf(rollDiff));
+                    Log.i("Direction", "Clockwise");
+                    fistBoolean = false;
+                    navLevel = 1;
+
+                    if (navLevel == 1) {
+                        if (directionIndicator == 0) {
+                            directionIndicator = 1;
+                        }
+                        if (directionIndicator == 1) {
+                            menuCursorPosition = secondNavSelectionForFistRotate;
+                            incrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition - 1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            //addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
+                        } else {
+                            menuCursorPosition = secondNavSelectionForFistRotate;
+                            decrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition - 1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            //addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
+                        }
+
+                    }
+
+                } else if (rollDiff <= -10.00) {
+                    Log.i("Roll Difference", String.valueOf(rollDiff));
+                    Log.i("Direction", "Anti-clockwise");
+                    fistBoolean = false;
+                    navLevel = 1;
+                    if (navLevel == 1) {
+                        if (directionIndicator == 0) {
+                            directionIndicator = 2;
+                        }
+                        if (directionIndicator == 1) {
+                            menuCursorPosition = secondNavSelectionForFistRotate;
+                            decrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition - 1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            //addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
+                        } else {
+                            menuCursorPosition = secondNavSelectionForFistRotate;
+                            incrementMenuCursorPosition(menus[directionIndicator]);
+                            currentMenuName = menus[directionIndicator][menuCursorPosition - 1];
+                            secondNavSelectionForFistRotate = menuCursorPosition;
+                            //addSpeechtoQueue(currentMenuName);
+                            autoSelectItem();
+                        }
+                    }
+                }
+            }
+        }
 
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
@@ -522,7 +600,9 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
                 ConfigActivity.tts.playEarcon(earconManager.helpEarcon, TextToSpeech.QUEUE_FLUSH, null);
-                help();
+                //help();
+                fistBoolean = Boolean.TRUE;
+                rollStartBoolean = Boolean.TRUE;
             } else if (pose == pose.FINGERS_SPREAD) {
                 stopFreeFlow();
                 menuCursorPosition = 0;
@@ -600,22 +680,27 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                     final String s = currentMenuName.toLowerCase();
                     if (s.equals("favourites")) {
                         secondNavSelection = 1;
+                        secondNavSelectionForFistRotate = 1;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("missed")) {
                         secondNavSelection = 3;
+                        secondNavSelectionForFistRotate = 1;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("dialed")) {
                         secondNavSelection = 4;
+                        secondNavSelectionForFistRotate = 2;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("received")) {
                         secondNavSelection = 5;
+                        secondNavSelectionForFistRotate = 3;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("emergency")) {
                         secondNavSelection = 2;
+                        secondNavSelectionForFistRotate = 2;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else {
@@ -640,7 +725,40 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             }
         }
 
-
+        public void autoSelectItem() {
+            if(navLevel == 1) {
+                final String s = currentMenuName.toLowerCase();
+                if (s.equals("favourites")) {
+                    secondNavSelection = 1;
+                    secondNavSelectionForFistRotate = 1;
+                    addSpeechtoQueue(s);
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("missed")) {
+                    secondNavSelection = 3;
+                    secondNavSelectionForFistRotate = 1;
+                    addSpeechtoQueue(s);
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("dialed")) {
+                    secondNavSelection = 4;
+                    secondNavSelectionForFistRotate = 2;
+                    addSpeechtoQueue(s);
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("received")) {
+                    secondNavSelection = 5;
+                    secondNavSelectionForFistRotate = 3;
+                    addSpeechtoQueue(s);
+                    callFunctionWithDelay(1000, s);
+                } else if (s.equals("emergency")) {
+                    secondNavSelection = 2;
+                    secondNavSelectionForFistRotate = 2;
+                    addSpeechtoQueue(s);
+                    callFunctionWithDelay(1000, s);
+                } else {
+                    secondNavLevelAction(s);
+                }
+            }
+            ConfigActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
+        }
 
         public void callFunctionWithDelay(int delay, final String s) {
             handler.postDelayed(new Runnable() {

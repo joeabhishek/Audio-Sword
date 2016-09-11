@@ -125,7 +125,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
             "Charlie and Barney's Restaurant is known for its signature chili.", "Known as the sports bar with a twist",
             "Laid-back joint with a New Orleans feel doling out Cajun-style eats & daily drink specials."};
     public static String[] delivery = {"Bucca Di Beppo", "Bento Asian Bistro", "Sushi Boss", "Topper's Pizza"};
-    public static String[] reservations = {"BurgerHaus", "Delhi Palace", "Plow And Anchor", "Al Basha"};
+    public static String[] reservations = {"Punch burger", "Delhi Palace", "Plow And Anchor", "Al Basha"};
     public static String[] restOptions = {"Navigate", "Call", "Bookmark"};
     public static String[] dummy = {"a", "b"};
     public static String[][] optionLists = {dummy, favourites,  restaurants, coffee, bars, delivery, reservations, favourites};
@@ -577,7 +577,6 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
 
             //Log.i("Roll", Float.toString(roll));
             if(fistBoolean){
-
                 if(rollStartBoolean) {
                     startRoll = roll;
                     rollStartBoolean = Boolean.FALSE;
@@ -596,16 +595,16 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                             directionIndicator = 1;
                         }
                         if(directionIndicator == 1) {
+                            menuCursorPosition = secondNavSelectionForFistRotate;
                             incrementMenuCursorPosition(menus[directionIndicator]);
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
-                            addSpeechtoQueue(currentMenuName);
                             autoSelectItem();
                         } else {
+                            menuCursorPosition = secondNavSelectionForFistRotate;
                             decrementMenuCursorPosition(menus[directionIndicator]);
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
-                            addSpeechtoQueue(currentMenuName);
                             autoSelectItem();
                         }
 
@@ -621,23 +620,23 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                             directionIndicator = 2;
                         }
                         if(directionIndicator == 1){
+                            menuCursorPosition = secondNavSelectionForFistRotate;
                             decrementMenuCursorPosition(menus[directionIndicator]);
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
-                            addSpeechtoQueue(currentMenuName);
                             autoSelectItem();
                         } else if (directionIndicator == 2) {
+                            menuCursorPosition = secondNavSelectionForFistRotate;
+                            Log.i("Cursor position", String.valueOf(menuCursorPosition));
                             incrementMenuCursorPosition(menus[directionIndicator]);
+                            Log.i("Cursor position", String.valueOf(menuCursorPosition));
                             currentMenuName = menus[directionIndicator][menuCursorPosition-1];
                             secondNavSelectionForFistRotate = menuCursorPosition;
-                            addSpeechtoQueue(currentMenuName);
                             autoSelectItem();
                         }
                     }
                 }
             }
-
-
         }
 
 
@@ -764,17 +763,21 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("delivery")) {
                         secondNavSelection = 5;
-                        secondNavSelectionForFistRotate = 5;
+                        // This is the index for the left direction.
+                        // When the user chooses to wave left at navlevel 1, we select another array of choices.
+                        // For this array, we need to start from 1 again.
+                        // Make sure this is correct in other applications too.
+                        secondNavSelectionForFistRotate = 1;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("reservations")) {
                         secondNavSelection = 6;
-                        secondNavSelectionForFistRotate = 6;
+                        secondNavSelectionForFistRotate = 2;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else if (s.equals("more")) {
                         secondNavSelection = 7;
-                        secondNavSelectionForFistRotate = 7;
+                        secondNavSelectionForFistRotate = 3;
                         addSpeechtoQueue(s);
                         callFunctionWithDelay(1000, s);
                     } else {
@@ -872,20 +875,23 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                     callFunctionWithDelay(1000, s);
                 } else if (s.equals("delivery")) {
                     secondNavSelection = 5;
-                    secondNavSelectionForFistRotate = 5;
+                    secondNavSelectionForFistRotate = 1;
                     callFunctionWithDelay(1000, s);
                 } else if (s.equals("reservations")) {
                     secondNavSelection = 6;
-                    secondNavSelectionForFistRotate = 6;
+                    secondNavSelectionForFistRotate = 2;
                     callFunctionWithDelay(1000, s);
                 } else if (s.equals("more")) {
                     secondNavSelection = 7;
-                    secondNavSelectionForFistRotate = 7;
+                    secondNavSelectionForFistRotate = 3;
                     callFunctionWithDelay(1000, s);
                 } else {
                     callFunctionWithDelay(1000, s);
                 }
+                addSpeechtoQueue(s);
             }
+
+            YelpActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
         }
 
 
