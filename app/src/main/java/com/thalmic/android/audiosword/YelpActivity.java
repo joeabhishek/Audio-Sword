@@ -916,6 +916,14 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
         }
     }
 
+    public void stopSpeech(View view){
+        tts.stop();
+    }
+
+    public void callHelp(View view){
+        help();
+    }
+
     public void help(){
         if(navLevel == 1){
             addSpeechtoQueue("Wave right for Favourites, Restaurants, Coffee shops and Bars. Wave left for Delivery Reservations and More.");

@@ -729,6 +729,14 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         }
     }
 
+    public void stopSpeech(View view){
+        tts.stop();
+    }
+
+    public void callHelp(View view){
+        help();
+    }
+
     public void help(){
         if(navLevel == 1){
             addSpeechtoQueue("App Drawer. Wave right for Yelp, Facebook and Uber. Wave left for Phone, Calendar and Books.");

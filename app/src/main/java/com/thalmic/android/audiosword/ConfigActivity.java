@@ -781,6 +781,15 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         }
     }
 
+
+    public void stopSpeech(View view){
+        tts.stop();
+    }
+
+    public void callHelp(View view){
+        help();
+    }
+
     public void help(){
         if(navLevel == 1){
             addSpeechtoQueue("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");

@@ -125,6 +125,7 @@
                 android:layout_width="0dp"
                 style="@android:style/TextAppearance.Small.Inverse" />
         </TableRow>
+
     </TableLayout>
 
 </LinearLayout>

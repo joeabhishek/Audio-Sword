@@ -104,6 +104,22 @@
                 android:layout_width="0dp"
                 style="@android:style/TextAppearance.Small.Inverse" />
         </TableRow>
+
+        <TableRow
+            android:layout_weight="1">
+
+            <Button
+                android:text="@string/stop_speech"
+                android:onClick="stopSpeech"
+                android:layout_margin="5dp"
+                android:layout_width="0dp" />
+
+            <Button
+                android:text="@string/call_help"
+                android:onClick="callHelp"
+                android:layout_margin="5dp"
+                android:layout_width="0dp" />
+        </TableRow>
     </TableLayout>
 
 </LinearLayout>

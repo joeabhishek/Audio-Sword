@@ -484,6 +484,7 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
         }
     }
 
+
     @Override
     public void onConnectionStatusChanged(GlassDevice.ConnectionStatus status) {
         updateGlassStatus(status);
