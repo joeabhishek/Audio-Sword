@@ -611,8 +611,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 if (navLevel > 1) {
                     navLevel--;
                     lockConfirmation = Boolean.FALSE;
-                }
-                if(navLevel == 1){
+                } else if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
                         Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
                         startActivity(intent);

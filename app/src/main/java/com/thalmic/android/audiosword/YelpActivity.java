@@ -659,8 +659,7 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                     navLevel--;
                     help();
                     lockConfirmation = Boolean.FALSE;
-                }
-                if(navLevel == 1){
+                } else if(navLevel == 1){
                     if(lockConfirmation == Boolean.TRUE) {
                         YelpActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                         Intent intent = new Intent(getApplicationContext(), DrawerActivity.class);
@@ -890,7 +889,6 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
                 }
                 addSpeechtoQueue(s);
             }
-
             YelpActivity.tts.playEarcon(earconManager.selectEarcon, TextToSpeech.QUEUE_ADD, null);
         }
 
