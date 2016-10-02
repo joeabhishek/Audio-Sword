@@ -789,6 +789,14 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         help();
     }
 
+    public void unlockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+    }
+
+    public void lockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+    }
+
     public void help(){
         if(navLevel == 1){
             addSpeechtoQueue("Wave right for favourites and emergency contacts. Wave left for missed, dialed and received");

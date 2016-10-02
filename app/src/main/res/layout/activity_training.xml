@@ -126,6 +126,22 @@
                 style="@android:style/TextAppearance.Small.Inverse" />
         </TableRow>
 
+        <TableRow
+            android:layout_weight="1">
+
+            <Button
+                android:text="@string/myo_unlock"
+                android:onClick="unlockMyo"
+                android:layout_margin="5dp"
+                android:layout_width="0dp" />
+
+            <Button
+                android:text="@string/myo_lock"
+                android:onClick="lockMyo"
+                android:layout_margin="5dp"
+                android:layout_width="0dp" />
+        </TableRow>
+
     </TableLayout>
 
 </LinearLayout>

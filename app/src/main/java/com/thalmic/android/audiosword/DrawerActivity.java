@@ -733,6 +733,14 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         tts.stop();
     }
 
+    public void unlockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+    }
+
+    public void lockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+    }
+
     public void callHelp(View view){
         help();
     }

@@ -922,6 +922,14 @@ public class YelpActivity extends Activity implements GlassDevice.GlassConnectio
         help();
     }
 
+    public void unlockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+    }
+
+    public void lockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+    }
+
     public void help(){
         if(navLevel == 1){
             addSpeechtoQueue("Wave right for Favourites, Restaurants, Coffee shops and Bars. Wave left for Delivery Reservations and More.");

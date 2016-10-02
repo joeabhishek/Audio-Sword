@@ -51,5 +51,7 @@
     <string name="training">Training</string>
     <string name="stop_speech">Stop Speech</string>
     <string name="call_help">Call Help</string>
+    <string name="myo_lock">Lock Myo</string>
+    <string name="myo_unlock">Unlock Myo</string>
 
 </resources>

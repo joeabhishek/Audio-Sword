@@ -484,6 +484,14 @@ public class TrainingActivity extends Activity implements GlassDevice.GlassConne
         }
     }
 
+    public void unlockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+    }
+
+    public void lockMyo(View view){
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+    }
+
 
     @Override
     public void onConnectionStatusChanged(GlassDevice.ConnectionStatus status) {
