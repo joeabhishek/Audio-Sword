@@ -495,6 +495,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     }
 
     private class MyoListener extends AbstractDeviceListener {
+
         @Override
         public void onConnect(Myo myo, long timestamp) {
             mPrefs.setMyoAddress(myo.getMacAddress());
