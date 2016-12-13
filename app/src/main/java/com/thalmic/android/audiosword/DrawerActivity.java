@@ -131,6 +131,7 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
     public static float endRoll;
     public static float rollDiff;
     public static Boolean fistBoolean = false;
+    public static Boolean fingerSpreadBoolean = false;
     public static Boolean rollStartBoolean = false;
 
 
@@ -530,37 +531,24 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
             float pitch = (float) Math.toDegrees(Quaternion.pitch(rotation));
             float yaw = (float) Math.toDegrees(Quaternion.yaw(rotation));
 
-            // Adjust roll and pitch for the orientation of the Myo on the arm.
-            /*if (myo.getXDirection() == XDirection.TOWARD_WRIST) {
-                pitch *= -1;
-                yaw *= -1;
-            }
-            float perRoll = Math.round(roll)-relRoll;
-            if (perRoll<-180){
-                perRoll+=360;
-            }
-            if (perRoll>180){
-                perRoll-=360;
-            }
-
-            float perPitch = Math.round(pitch)-relPitch;
-            if (perPitch<-90){
-                perPitch += 180;
-            }
-            if (perPitch>90){
-                perPitch -= 180;
+            if(fingerSpreadBoolean) {
+                if(rollStartBoolean) {
+                    startRoll = roll;
+                    rollStartBoolean = false;
+                }
+                endRoll = roll;
+                rollDiff = (startRoll - endRoll);
+                if (rollDiff <= -10.00){
+                    Log.i("Roll Diff Finger Spread", String.valueOf(rollDiff));
+                    Log.i("Direction", "Anti-clockwise");
+                    Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                    tts.speak("locking", TextToSpeech.QUEUE_FLUSH, null);
+                    tts.playEarcon(earconManager.lockEarcon, TextToSpeech.QUEUE_ADD, null);
+                    myo.lock();
+                    fingerSpreadBoolean = false;
+                }
             }
 
-
-            float perYaw = Math.round(yaw)-relYaw;
-            if (perYaw<-180){
-                perYaw += 360;
-            }
-            if (perYaw>180){
-                perYaw -= 360;
-            }*/
-
-            //Log.i("Roll", Float.toString(roll));
             if(fistBoolean){
                 if(rollStartBoolean) {
                     startRoll = roll;
@@ -587,6 +575,8 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
             mPoseView.setText(pose.name());
+            fingerSpreadBoolean = Boolean.FALSE;
+            fistBoolean = Boolean.FALSE;
             if (pose == pose.FIST) {
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
@@ -596,6 +586,9 @@ public class DrawerActivity extends Activity implements GlassDevice.GlassConnect
                 //help();
             } else if (pose == pose.FINGERS_SPREAD) {
                 fistBoolean = Boolean.FALSE;
+                DrawerActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                fingerSpreadBoolean = Boolean.TRUE;
+                rollStartBoolean = Boolean.TRUE;
                 stopFreeFlow();
                 menuCursorPosition = 0;
                 directionIndicator = 0;

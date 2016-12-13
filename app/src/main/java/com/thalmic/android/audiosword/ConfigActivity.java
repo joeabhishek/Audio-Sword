@@ -133,6 +133,7 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
     public static float endRoll;
     public static float rollDiff;
     public static Boolean fistBoolean = false;
+    public static Boolean fingerSpreadBoolean = false;
     public static Boolean rollStartBoolean = false;
     public static int secondNavSelectionForFistRotate = 0;
 
@@ -528,6 +529,27 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
             roll = (float) Math.toDegrees(Quaternion.roll(rotation));
             float pitch = (float) Math.toDegrees(Quaternion.pitch(rotation));
             float yaw = (float) Math.toDegrees(Quaternion.yaw(rotation));
+
+
+            if(fingerSpreadBoolean) {
+                if(rollStartBoolean) {
+                    startRoll = roll;
+                    rollStartBoolean = false;
+                }
+                endRoll = roll;
+                rollDiff = (startRoll - endRoll);
+                if (rollDiff <= -10.00){
+                    Log.i("Roll Diff Finger Spread", String.valueOf(rollDiff));
+                    Log.i("Direction", "Anti-clockwise");
+                    Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
+                    tts.speak("locking", TextToSpeech.QUEUE_FLUSH, null);
+                    tts.playEarcon(earconManager.lockEarcon, TextToSpeech.QUEUE_ADD, null);
+                    myo.lock();
+                    fingerSpreadBoolean = false;
+                }
+            }
+
+
             if (fistBoolean) {
                 if (rollStartBoolean) {
                     startRoll = roll;
@@ -596,6 +618,8 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
         @Override
         public void onPose(Myo myo, long timestamp, final Pose pose) {
             mPoseView.setText(pose.name());
+            fingerSpreadBoolean = Boolean.FALSE;
+            fistBoolean = Boolean.FALSE;
             if (pose == pose.FIST) {
                 //startLocationUpdates();
                 //speakOut("Wave right for favourites");
@@ -604,10 +628,12 @@ public class ConfigActivity extends Activity implements GlassDevice.GlassConnect
                 fistBoolean = Boolean.TRUE;
                 rollStartBoolean = Boolean.TRUE;
             } else if (pose == pose.FINGERS_SPREAD) {
+                ConfigActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
+                fingerSpreadBoolean = Boolean.TRUE;
+                rollStartBoolean = Boolean.TRUE;
                 stopFreeFlow();
                 menuCursorPosition = 0;
                 directionIndicator = 0;
-                ConfigActivity.tts.playEarcon(earconManager.unlockEarcon, TextToSpeech.QUEUE_FLUSH, null);
                 if (navLevel > 1) {
                     navLevel--;
                     lockConfirmation = Boolean.FALSE;
